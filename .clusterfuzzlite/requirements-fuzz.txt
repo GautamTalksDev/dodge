@@ -1,0 +1,6 @@
+# sgp4 for the fuzz build, same hashes as requirements.txt
+sgp4==2.27 \
+    --hash=sha256:4d3775313120dcb6239535fa0c94cb6d5b089fd84bbfb15220923ae38dec7296 \
+    --hash=sha256:5ae1394cf0d91f54418530b02a797b14c10bb28e3f4ab616cad79a3fd67e2399 \
+    --hash=sha256:827c63feb60987ad177c2c80f3a927e721ead2f444d6560cd2a4337ca90d2490 \
+    --hash=sha256:ee68f73cb2383bc950eada2ca1b10357b0165dbf5ab75185962009375bab8761
