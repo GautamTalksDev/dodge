@@ -17,7 +17,7 @@
 
   let W = 0, H = 0, DPR = Math.min(devicePixelRatio || 1, 2), R = 1, cx = 0, cy = 0;
   let land = [], sats = [], replay = [], window0 = 0;
-  const cam = { spin: 0, tilt: 0.32, zoom: 1 }, target = { spin: null, tilt: 0.32, zoom: 1 };
+  const cam = { spin: 0, tilt: 0.32, zoom: 1, lift: 0 }, target = { spin: null, tilt: 0.32, zoom: 1, lift: 0 };
   let mode = "live", filter = null, focusEv = null, paused = reduce, dragging = null, userMoved = false;
   let replayStart = performance.now(), focusStart = performance.now(), lastFrame = 0, raf = 0, visible = true;
   let slowFrames = 0, satStride = 1;
@@ -27,7 +27,7 @@
     W = canvas.clientWidth; H = canvas.clientHeight;
     canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
     const wide = W > 1000;
-    R = Math.min(W, H) * (wide ? 0.38 : 0.36);
+    R = Math.min(W, H) * (wide ? 0.38 : 0.42);
     cx = wide ? W * 0.68 : W * 0.5;
     cy = H * (wide ? 0.5 : 0.5);
   }
@@ -42,7 +42,7 @@
     const ct = Math.cos(cam.tilt), st = Math.sin(cam.tilt);
     const y = y0 * ct - z0 * st, z = y0 * st + z0 * ct;
     const k = R * cam.zoom * rr;
-    const sx = cx + x0 * k, sy = cy - z * k, depth = -y;
+    const sx = cx + x0 * k, sy = cy - cam.lift * H - z * k, depth = -y;
     if (depth < 0 && x0 * x0 * rr * rr + z * z * rr * rr < 1) return null;
     return [sx, sy, depth];
   }
@@ -84,6 +84,7 @@
     }
     cam.tilt += (target.tilt - cam.tilt) * 0.07;
     cam.zoom += (target.zoom - cam.zoom) * 0.07;
+    cam.lift += (target.lift - cam.lift) * 0.07;
   }
 
   let frozenSim = null;
@@ -95,6 +96,7 @@
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.clearRect(0, 0, W, H);
     const Rz = R * cam.zoom;
+    const cyl = cy - cam.lift * H;
 
     // Far-side Starlinks, before the Earth hides them.
     const near = [];
@@ -107,12 +109,12 @@
     }
 
     // Halo and disk.
-    let g = ctx.createRadialGradient(cx, cy, Rz * 0.96, cx, cy, Rz * 1.16);
+    let g = ctx.createRadialGradient(cx, cyl, Rz * 0.96, cx, cyl, Rz * 1.16);
     g.addColorStop(0, "rgba(120,160,220,0.16)"); g.addColorStop(1, "rgba(120,160,220,0)");
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, Rz * 1.16, 0, TAU); ctx.fill();
-    g = ctx.createRadialGradient(cx - Rz * 0.4, cy - Rz * 0.45, Rz * 0.05, cx, cy, Rz);
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cyl, Rz * 1.16, 0, TAU); ctx.fill();
+    g = ctx.createRadialGradient(cx - Rz * 0.4, cyl - Rz * 0.45, Rz * 0.05, cx, cyl, Rz);
     g.addColorStop(0, "#151b28"); g.addColorStop(1, "#090b10");
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, Rz, 0, TAU); ctx.fill();
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cyl, Rz, 0, TAU); ctx.fill();
 
     // Land: four alpha buckets, one fill style each, faded toward the limb.
     const buckets = [[], [], [], []];
@@ -121,9 +123,9 @@
       if (!p || p[2] <= 0.04) continue;
       buckets[Math.min(3, (p[2] * 4) | 0)].push(p[0], p[1]);
     }
-    const ds = Math.max(1.1, 1.5 * Math.sqrt(cam.zoom));
+    const ds = Math.max(1.4, 1.7 * Math.sqrt(cam.zoom));
     for (let b = 0; b < 4; b++) {
-      ctx.fillStyle = `rgba(150,165,190,${0.14 + b * 0.13})`;
+      ctx.fillStyle = `rgba(160,176,204,${0.2 + b * 0.17})`;
       const arr = buckets[b];
       for (let k = 0; k < arr.length; k += 2) ctx.fillRect(arr[k] - ds / 2, arr[k + 1] - ds / 2, ds, ds);
     }
@@ -219,6 +221,8 @@
       if (callout) {
         callout.style.opacity = "1";
         callout.style.left = at[0] + "px"; callout.style.top = at[1] + "px";
+        callout.classList.toggle("above", W < 700);
+        callout.classList.toggle("flip", W >= 700 && at[0] > W - 280);
         const s = Math.abs(Math.round(dt)), mm = String(Math.floor(s / 60)).padStart(2, "0"), sc = String(s % 60).padStart(2, "0");
         callout.innerHTML = `${dt < 0 ? "T-" : "T+"}${mm}:${sc} &nbsp;·&nbsp; predicted miss <b>${e.missLabel}</b><br>${e.label}`;
       }
@@ -259,9 +263,10 @@
       if (m === "focus" && opts.event) {
         const e = opts.event;
         focusEv = e; focusStart = performance.now();
-        target.spin = -Math.PI / 2 - e.lon * D2R; target.tilt = e.lat * D2R; target.zoom = W < 700 ? 1.9 : 2.3;
+        target.spin = -Math.PI / 2 - e.lon * D2R; target.tilt = e.lat * D2R; target.zoom = W < 700 ? 1.7 : 1.9;
+        target.lift = W < 700 ? 0.16 : 0;
       } else {
-        focusEv = null; target.spin = null; target.tilt = 0.32; target.zoom = 1;
+        focusEv = null; target.spin = null; target.tilt = 0.32; target.zoom = 1; target.lift = 0;
         if (m === "replay") replayStart = performance.now();
       }
       schedule();

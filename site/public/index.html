@@ -40,19 +40,19 @@
 
 <main id="main">
   <div class="stage-wrap">
-    <div class="stage" aria-hidden="true">
-      <canvas id="globe"></canvas>
-      <div class="callouts"><div class="callout" id="callout"></div></div>
-    </div>
-    <div class="stage-ui" id="stage-ui">
+    <div class="stage">
+      <canvas id="globe" aria-hidden="true"></canvas>
+      <div class="callouts" aria-hidden="true"><div class="callout" id="callout"></div></div>
+      <div class="stage-ui" id="stage-ui">
       <div class="key micro" aria-hidden="true"><span><i class="k-star"></i>Starlink</span><span><i class="k-sig"></i>Pass under 5 km</span><span><i class="k-ring"></i>Under 1 km</span></div>
       <span class="chip" aria-live="off"><span class="micro" id="mode-label">Live</span>&nbsp;<span id="clock" class="num">--:--:--</span>&nbsp;UTC</span>
       <button class="chip" id="pause" type="button" aria-pressed="false" aria-label="Pause the globe">Pause</button>
     </div>
 
+    </div>
     <div class="over">
       <section class="hero" aria-labelledby="h1">
-        <div class="hero-copy rv">
+        <div class="hero-copy">
           <div class="eyebrow micro"><span class="rule"></span><span id="eyebrow">Open daily screen of low Earth orbit</span></div>
           <h1 id="h1">Who makes Starlink <em>dodge.</em></h1>
           <p class="lede">In the next 24 hours, Starlink satellites will pass within 5&nbsp;km of another object <b id="lede-n">thousands of</b> times. SpaceX moved them out of the way <b>355,848</b> times in the past year. DODGE is the open record of who is on the other side.</p>

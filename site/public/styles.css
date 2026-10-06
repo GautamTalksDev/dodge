@@ -69,8 +69,10 @@ a:hover { text-decoration-color: var(--signal); }
 .callout { position: absolute; transform: translate(14px, -50%); padding: 8px 10px; border-radius: 6px; font: 500 11px/1.4 var(--mono); letter-spacing: .04em; color: var(--t1);
   background: color-mix(in oklch, var(--raised) 70%, transparent); border: 1px solid var(--line-2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); white-space: nowrap; transition: opacity .3s var(--ease-ui); }
 .callout b { color: var(--signal); font-weight: 600; }
+.callout.flip { transform: translate(calc(-100% - 14px), -50%); }
+.callout.flip::before { left: auto; right: -14px; }
 .callout::before { content: ""; position: absolute; left: -14px; top: 50%; width: 14px; height: 1px; background: var(--line-2); }
-.stage-ui { position: absolute; right: var(--side); bottom: 28px; display: flex; gap: 10px; align-items: center; z-index: 3; }
+.stage-ui { position: absolute; right: var(--side); bottom: 28px; z-index: 4; display: flex; gap: 10px; align-items: center; z-index: 3; }
 .chip { display: inline-flex; gap: 8px; align-items: center; height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line-2); color: var(--t2);
   background: color-mix(in oklch, var(--bg) 60%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); font: 500 12px var(--mono); letter-spacing: .04em; cursor: pointer; transition: color .15s var(--ease-ui), border-color .15s var(--ease-ui); }
 .chip:hover { color: var(--t1); border-color: var(--t3); }
@@ -114,14 +116,14 @@ h1 em { font: italic 400 1.04em/1 var(--serif); letter-spacing: -.01em; color: v
 
 /* Numbers band */
 .band { position: relative; z-index: 2; background: var(--bg); border-block: 1px solid var(--line); }
-.figs { display: grid; grid-template-columns: repeat(4, 1fr); max-width: var(--max); margin: 0 auto; }
+.figs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: var(--max); margin: 0 auto; }
 .fig { padding: 40px var(--gut) 34px; border-right: 1px solid var(--line); position: relative; }
 .fig:last-child { border-right: 0; }
 .fig::before { content: "+"; position: absolute; top: -9px; left: -5px; color: var(--t4); font: 12px var(--mono); }
 .fig b { display: block; font: 500 clamp(34px, 4.2vw, 60px)/1 var(--mono); letter-spacing: -.045em; font-variant-numeric: tabular-nums slashed-zero; margin: 14px 0 12px; }
 .fig b.sig { color: var(--signal); }
 .fig p { margin: 0; color: var(--t2); font-size: 15px; }
-.fig .src { margin-top: 10px; }
+.fig p.src { margin-top: 12px; font: 500 11px/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--t3); }
 
 /* Sections */
 .sec { position: relative; z-index: 2; background: var(--bg); padding: clamp(96px, 12vw, 160px) var(--side); }
@@ -144,7 +146,7 @@ table.data { width: 100%; border-collapse: collapse; font-size: 14px; min-width:
 .data tbody tr { transition: background .15s var(--ease-ui); }
 .data tbody tr:hover { background: rgba(255,255,255,.025); }
 .data tbody tr.clickable { cursor: pointer; }
-.r { text-align: right; white-space: nowrap; }
+.r, .data th.r { text-align: right; white-space: nowrap; }
 .sub { display: block; color: var(--t3); font: 12px var(--mono); margin-top: 2px; }
 .miss { font-family: var(--mono); color: var(--signal); font-weight: 500; }
 .hbar { display: inline-block; height: 4px; border-radius: 2px; background: var(--signal); opacity: .85; vertical-align: middle; margin-right: 10px; }
@@ -161,6 +163,7 @@ table.data { width: 100%; border-collapse: collapse; font-size: 14px; min-width:
 .share { background: var(--raised); padding: 22px; min-height: 132px; display: flex; flex-direction: column; gap: 6px; }
 .share h3 { margin: 0; font: 500 17px var(--sans); }
 .share p { margin: 0 0 auto; color: var(--t3); font-size: 13px; }
+.share .pill { align-self: flex-start; margin-top: 12px; }
 
 .quote { font: italic 400 clamp(30px, 3.6vw, 52px)/1.12 var(--serif); letter-spacing: -.01em; max-width: 980px; margin: 0; color: var(--t1); }
 .quote b { color: var(--signal); font-weight: 400; }
@@ -193,7 +196,7 @@ table.data { width: 100%; border-collapse: collapse; font-size: 14px; min-width:
   .telemetry { display: none; }
   .bar { grid-template-columns: auto 1fr; }
   .nav { justify-content: end; }
-  .figs { grid-template-columns: repeat(2, 1fr); }
+  .figs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .fig:nth-child(2) { border-right: 0; }
   .fig:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
   .sec-head { grid-template-columns: 1fr; }
@@ -203,7 +206,13 @@ table.data { width: 100%; border-collapse: collapse; font-size: 14px; min-width:
   .nav a:not(.keep) { display: none; }
   .stage { height: 62svh; top: 56px; }
   .over { margin-top: -62svh; }
-  .hero { min-height: 0; padding-top: calc(62svh - 40px); padding-bottom: 56px; }
+  .hero { min-height: 0; padding-top: calc(62svh + 20px); padding-bottom: 56px; }
+  .fig { padding: 28px 16px 24px; }
+  .hero-copy { background: linear-gradient(to bottom, transparent, var(--bg) 56px); padding-top: 56px; margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
+  .fig b { font-size: 28px; }
+  .next { grid-template-columns: 1fr; }
+  .next .tminus { grid-row: auto; font-size: 26px; }
+  .next button { grid-column: 1; }
   .step { min-height: 70svh; align-items: flex-end; padding-bottom: 32px; }
   .stage-ui .key { display: none; }
   .stage-ui { bottom: 12px; }
@@ -216,3 +225,8 @@ table.data { width: 100%; border-collapse: collapse; font-size: 14px; min-width:
 .sortbtn { all: unset; cursor: pointer; font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; }
 .sortbtn:hover { color: var(--t1); }
 .sortbtn:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; border-radius: 4px; }
+/* The story layer sits over the globe: let clicks and drags reach the globe except on actual content. */
+.over { pointer-events: none; }
+.over .hero-copy, .over .card { pointer-events: auto; }
+.callout.above { transform: translate(-50%, calc(-100% - 22px)); }
+.callout.above::before { left: 50%; top: auto; bottom: -22px; width: 1px; height: 22px; }
