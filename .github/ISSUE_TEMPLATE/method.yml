@@ -1,0 +1,18 @@
+name: Method proposal
+description: Suggest a change to how DODGE screens or attributes passes.
+title: "Method: "
+labels: [method]
+body:
+  - type: textarea
+    id: change
+    attributes:
+      label: The change
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it is better, with evidence
+      description: Papers, data or a validation run (see docs/VALIDATION.md).
+    validations:
+      required: true

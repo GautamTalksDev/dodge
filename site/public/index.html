@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="/styles.css">
 <script src="/boot.js"></script>
 </head>
-<body>
+<body data-loading>
 <a class="skip" href="#main">Skip to content</a>
 
 <header class="bar">
@@ -38,6 +38,17 @@
   </nav>
 </header>
 
+<div class="progress" aria-hidden="true"></div>
+<nav class="rail micro" id="rail" aria-label="Chapters">
+  <ol class="rail-list">
+    <li><a href="#ch1"><i></i><span>01 Right now</span></a></li>
+    <li><a href="#ch2"><i></i><span>02 The next 24 hours</span></a></li>
+    <li><a href="#ch3"><i></i><span>03 Closest pass</span></a></li>
+    <li><a href="#ch4"><i></i><span>04 Nobody steering</span></a></li>
+    <li><a href="#ch5"><i></i><span>05 No owner</span></a></li>
+  </ol>
+</nav>
+
 <main id="main">
   <div class="stage-wrap">
     <div class="stage">
@@ -56,49 +67,60 @@
           <div class="eyebrow micro"><span class="rule"></span><span id="eyebrow">Open daily screen of low Earth orbit</span></div>
           <h1 id="h1">Who makes Starlink <em>dodge.</em></h1>
           <p class="lede">In the next 24 hours, Starlink satellites will pass within 5&nbsp;km of another object <b id="lede-n">thousands of</b> times. SpaceX moved them out of the way <b>355,848</b> times in the past year. DODGE is the open record of who is on the other side.</p>
-          <div class="next" id="next" hidden>
-            <span class="tminus" id="next-t">T-00:00:00</span>
-            <span class="who" id="next-who">Next predicted pass under 1 km</span>
+          <div class="next glass" id="next" hidden>
+            <span class="tminus"><small>Next pass under 1 km</small><span id="next-t">T-00:00:00</span></span>
+            <span class="who" id="next-who">-</span>
             <span class="meta" id="next-meta"></span>
             <button class="btn" type="button" id="next-show">Show it on the globe <span class="arr" aria-hidden="true">→</span></button>
           </div>
+          <div class="scroll-cue micro" aria-hidden="true"><i></i>Scroll to follow the day</div>
         </div>
       </section>
 
       <div class="steps">
-        <section class="step" data-mode="live" aria-labelledby="st1">
-          <div class="card rv"><span class="micro">01 · Right now</span>
+        <section class="step" data-mode="live" id="ch1" aria-labelledby="st1">
+          <div class="card glass">
+            <div class="card-head micro"><span class="idx"><b>01</b> <span>/ 05</span></span><span class="mode">Live</span></div>
             <h2 id="st1">Every Starlink, where it is this second.</h2>
-            <p>Each white point is one of <b id="st-star">11,000</b> Starlink satellites, placed from the positions SpaceX publishes. The orange marks are predicted passes within 5&nbsp;km of another object, appearing as they happen.</p>
+            <div class="stat"><span class="micro">Starlink satellites tracked</span><p><b class="num" id="st-star">-</b><span class="u">satellites</span></p></div>
+            <p class="body">Each white point is a Starlink satellite, placed from the positions SpaceX publishes. Orange marks are predicted passes within 5&nbsp;km of another object, appearing the moment they happen.</p>
+            <div class="card-foot micro">Source · SpaceX ephemerides via CelesTrak SupGP</div>
           </div>
         </section>
-        <section class="step" data-mode="replay" aria-labelledby="st2">
-          <div class="card rv"><span class="micro">02 · The next 24 hours</span>
+        <section class="step" data-mode="replay" id="ch2" aria-labelledby="st2">
+          <div class="card glass">
+            <div class="card-head micro"><span class="idx"><b>02</b> <span>/ 05</span></span><span class="mode">Replay · 24 h</span></div>
             <h2 id="st2">A day of near misses, in one minute.</h2>
-            <div class="big sig num" id="st-5">-</div>
-            <p>predicted passes under 5&nbsp;km. <b id="st-1">-</b> are under 1&nbsp;km. Rings mark the sub-kilometre ones.</p>
+            <div class="stat"><span class="micro">Under 5 km · next 24 h</span><p><b class="num sig" id="st-5">-</b><span class="u">passes</span></p></div>
+            <p class="body"><b id="st-1">-</b> of them are under 1&nbsp;km. Rings mark the sub-kilometre ones. The globe plays the whole day in sixty seconds.</p>
+            <div class="card-foot micro">Screen · SGP4, 10 s grid, 50 ms refinement</div>
           </div>
         </section>
-        <section class="step" data-mode="focus" aria-labelledby="st3">
-          <div class="card rv"><span class="micro">03 · Closest pass</span>
+        <section class="step" data-mode="focus" id="ch3" aria-labelledby="st3">
+          <div class="card glass">
+            <div class="card-head micro"><span class="idx"><b>03</b> <span>/ 05</span></span><span class="mode">Focus</span></div>
             <h2 id="st3">The closest predicted pass of the day.</h2>
-            <div class="big sig num" id="st-min">-</div>
-            <p id="st-min-who">-</p>
-            <p class="micro">Screening grade. Public orbits for most objects are good to about a kilometre.</p>
+            <div class="stat"><span class="micro">Predicted miss distance</span><p><b class="num sig" id="st-min">-</b><span class="u" id="st-min-u">apart</span></p></div>
+            <p class="body"><span id="st-min-who">-</span></p>
+            <div class="card-foot micro">Screening grade · public orbits are good to about 1 km</div>
           </div>
         </section>
-        <section class="step" data-mode="dead" aria-labelledby="st4">
-          <div class="card rv"><span class="micro">04 · Nobody steering</span>
-            <h2 id="st4">Spent rocket stages and debris.</h2>
-            <div class="big num" id="st-dead">-</div>
-            <p id="st-dead-p">passes involve hardware nobody can move. Starlink always has to be the one that dodges.</p>
+        <section class="step" data-mode="dead" id="ch4" aria-labelledby="st4">
+          <div class="card glass">
+            <div class="card-head micro"><span class="idx"><b>04</b> <span>/ 05</span></span><span class="mode">Stages and debris</span></div>
+            <h2 id="st4">Hardware nobody can steer.</h2>
+            <div class="stat"><span class="micro">Passes with rocket bodies and debris</span><p><b class="num" id="st-dead">-</b><span class="u">passes</span></p></div>
+            <p class="body"><span id="st-dead-p">Spent rocket stages and fragments cannot move. Starlink always has to be the one that dodges.</span></p>
+            <div class="card-foot micro">Attribution · CelesTrak SATCAT owner</div>
           </div>
         </section>
-        <section class="step" data-mode="tbd" aria-labelledby="st5">
-          <div class="card rv"><span class="micro">05 · Unidentified</span>
+        <section class="step" data-mode="tbd" id="ch5" aria-labelledby="st5">
+          <div class="card glass">
+            <div class="card-head micro"><span class="idx"><b>05</b> <span>/ 05</span></span><span class="mode">No owner</span></div>
             <h2 id="st5">Objects with no owner on record.</h2>
-            <div class="big num" id="st-tbd">-</div>
-            <p id="st-tbd-p">passes per object, the highest of any group. Many are recent rideshare deployments still waiting to be identified.</p>
+            <div class="stat"><span class="micro">Passes per object</span><p><b class="num" id="st-tbd">-</b><span class="u">per object</span></p></div>
+            <p class="body"><span id="st-tbd-p">The highest rate of any group. Many are recent rideshare deployments still waiting to be identified.</span></p>
+            <div class="card-foot micro">SATCAT owner code TBD</div>
           </div>
         </section>
       </div>
@@ -148,13 +170,14 @@
       <div><span class="micro">Transparency</span><h2 id="h-share">Who tells everyone where they are.</h2></div>
       <p>Operators that publish their own orbit predictions let everyone screen against accurate positions instead of radar estimates. Some share privately with US Space Command, TraCSS or SpaceX instead. Only public sharing shows here.</p>
     </div>
-    <div class="inner"><div class="share-grid" id="share-grid"></div></div>
+    <div class="inner"><div class="share-grid spot" id="share-grid"></div></div>
   </section>
 
   <section class="sec" aria-labelledby="h-quote">
-    <div class="inner">
+    <div class="inner quote-wrap">
       <span class="micro" id="h-quote">Why this exists</span>
       <p class="quote rv">Space is getting crowded, but the record of who crowds it should not be private. <b>Every number here can be checked.</b></p>
+      <p class="micro quote-by">Gautam Khosla · DODGE</p>
     </div>
   </section>
 
@@ -164,12 +187,12 @@
       <p>The screen runs every day on GitHub, from public data, with code anyone can read and rerun. Orbit recordings and every predicted pass are published as daily releases.</p>
     </div>
     <div class="inner">
-      <div class="data-cta">
-        <a href="/method/"><span class="micro">Method</span><strong>How the screen works</strong><span>Sources, SGP4 screening, validation, and what the numbers do not mean.</span></a>
-        <a href="https://github.com/GautamTalksDev/dodge" rel="noopener"><span class="micro">Code</span><strong>GitHub repository</strong><span>Recorder, engine, tests and this site. MIT licensed.</span></a>
-        <a href="https://github.com/GautamTalksDev/dodge/releases" rel="noopener"><span class="micro">Data</span><strong>Daily releases</strong><span>Raw orbit recordings, SATCAT snapshots and every pass under 5&nbsp;km.</span></a>
+      <div class="data-cta spot">
+        <a href="/method/"><span class="micro">Method</span><strong>How the screen works<span class="arr" aria-hidden="true">↗</span></strong><span>Sources, SGP4 screening, validation, and what the numbers do not mean.</span></a>
+        <a href="https://github.com/GautamTalksDev/dodge" rel="noopener"><span class="micro">Code</span><strong>GitHub repository<span class="arr" aria-hidden="true">↗</span></strong><span>Recorder, engine, tests and this site. MIT licensed.</span></a>
+        <a href="https://github.com/GautamTalksDev/dodge/releases" rel="noopener"><span class="micro">Data</span><strong>Daily releases<span class="arr" aria-hidden="true">↗</span></strong><span>Raw orbit recordings, SATCAT snapshots and every pass under 5&nbsp;km.</span></a>
       </div>
-      <div class="cite" id="cite">Cite as: DODGE, open daily screen of close approaches to Starlink. dodge.gautamkhosla.com</div>
+      <div class="cite"><span id="cite-text">Khosla, G. (2026). DODGE: an open daily screen of close approaches to Starlink satellites. https://dodge.gautamkhosla.com</span><button class="btn" type="button" id="cite-copy">Copy</button></div>
     </div>
   </section>
 </main>
@@ -179,7 +202,8 @@
     <p>Orbit data from <a href="https://celestrak.org">CelesTrak</a>. Starlink and other operator positions come from their own published ephemerides (CelesTrak SupGP). DODGE does not use Space-Track data.</p>
     <p>Independent project by <a href="https://gautamkhosla.com">Gautam Khosla</a>. Not affiliated with SpaceX, Starlink or any operator named here. <span id="gen"></span></p>
   </div>
-  <p class="micro"><a href="/method/">Method</a> · <a href="https://github.com/GautamTalksDev/dodge/issues">Report an error</a></p>
+  <div class="micro"><p class="fresh"><span class="live">Screen</span> <span id="fresh">-</span></p><p><a href="/method/">Method</a> · <a href="/privacy/">Privacy</a> · <a href="https://github.com/GautamTalksDev/dodge/security/policy">Security</a> · <a href="https://github.com/GautamTalksDev/dodge/issues">Report an error</a></p></div>
+  <div class="wordmark" aria-hidden="true">DODGE</div>
 </footer>
 <div class="sr" aria-live="polite" id="announce"></div>
 <script src="/globe.js" defer></script>

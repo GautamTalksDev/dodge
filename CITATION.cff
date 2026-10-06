@@ -1,0 +1,46 @@
+cff-version: 1.2.0
+message: "If you use DODGE data or code, please cite it as below."
+type: dataset
+title: "DODGE: an open daily screen of close approaches to Starlink satellites"
+abstract: >-
+  DODGE predicts, every day, every pass within 5 km between a Starlink
+  satellite and any other tracked object over the next 24 hours, using SGP4
+  on public CelesTrak data and operator ephemerides, and attributes each pass
+  to the other object's owner, fleet and type. Raw recordings, every pass and
+  daily summaries are published openly.
+authors:
+  - family-names: Khosla
+    given-names: Gautam
+    email: developwith.gt@gmail.com
+url: "https://dodge.gautamkhosla.com"
+repository-code: "https://github.com/GautamTalksDev/dodge"
+repository-artifact: "https://github.com/GautamTalksDev/dodge/releases"
+license: MIT
+keywords:
+  - space situational awareness
+  - conjunction screening
+  - Starlink
+  - satellites
+  - orbital debris
+  - SGP4
+  - open data
+date-released: "2026-10-07"
+references:
+  - type: article
+    title: "Revisiting Spacetrack Report #3"
+    authors:
+      - family-names: Vallado
+        given-names: David
+      - family-names: Crawford
+        given-names: Paul
+      - family-names: Hujsak
+        given-names: Richard
+      - family-names: Kelso
+        given-names: T.S.
+    year: 2006
+    notes: "AIAA 2006-6753"
+  - type: database
+    title: "CelesTrak GP and SupGP element sets, and SATCAT"
+    authors:
+      - name: CelesTrak
+    url: "https://celestrak.org"

@@ -1,0 +1,34 @@
+name: Data correction
+description: A published number, owner, fleet or name looks wrong.
+title: "Data: "
+labels: [data]
+body:
+  - type: markdown
+    attributes:
+      value: Thank you. Corrections are fixed forward and logged in CHANGELOG.md; past releases are never edited.
+  - type: input
+    id: object
+    attributes:
+      label: Object
+      description: NORAD catalog number and name, if it is about one object.
+      placeholder: "68379 CZ-2D R/B"
+  - type: input
+    id: day
+    attributes:
+      label: Screen date (UTC)
+      placeholder: "2026-10-07"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What DODGE shows, and what you believe is right
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Source
+      description: A link or reference that supports the correction.
+    validations:
+      required: true

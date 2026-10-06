@@ -83,6 +83,14 @@ def main(workdir):
     for key, url in SOURCES:
         status, body = fetch(url)
         info = {"status": status, "bytes": len(body)}
+        if status not in (200, 403):
+            # CelesTrak's usage policy: stop querying on any unexpected
+            # response, never retry in a loop. Keep what this run already
+            # has; the next scheduled run tries again in 4 hours.
+            run["sources"][key] = info
+            run["stopped_at"] = key
+            print(f"::warning::CelesTrak returned {status} for {key}; stopping this run", file=sys.stderr)
+            break
         if status == 200:
             try:
                 data = json.loads(body)

@@ -1,5 +1,17 @@
 // Runs before first paint: mark JS on, so reveal styles only apply when they can finish.
 document.documentElement.classList.add("js");
+
+// Trusted Types: the CSP allows HTML to reach the DOM only through this one
+// policy. Every caller builds markup from fixed templates and passes every
+// data value through esc() first; satellite names and other fields come from
+// third-party JSON and are treated as untrusted text.
+(function () {
+  var policy = null;
+  if (window.trustedTypes && trustedTypes.createPolicy) {
+    policy = trustedTypes.createPolicy("dodge", { createHTML: function (s) { return s; } });
+  }
+  window.dodgeSetHTML = function (el, html) { el.innerHTML = policy ? policy.createHTML(html) : html; };
+})();
 // Film grain: one 256px noise tile, made once, used as a fixed overlay.
 addEventListener("DOMContentLoaded", function () {
   try {

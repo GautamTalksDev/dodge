@@ -1,0 +1,32 @@
+# Tests on every push and pull request. Read-only, no secrets.
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: step-security/harden-runner@351661ca32ac09a36dc5ee2d536e3128f2a3c8ed # v2.22.0
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install (hash-pinned)
+        run: python3 -m venv .venv && .venv/bin/pip install --quiet --require-hashes --no-deps -r requirements.txt
+      - name: Unit tests
+        run: .venv/bin/python -m unittest discover -s tests -p "test_*.py" -v
+      - name: Python compiles cleanly
+        run: python3 -m compileall -q recorder engine tools tests
+      - name: Site scripts parse
+        run: for f in site/public/*.js; do node --check "$f"; done
+      - name: No em or en dashes in user-facing text
+        run: |
+          if grep -rnP "[\x{2013}\x{2014}]" site/public/*.html site/public/*/index.html README.md docs/; then
+            echo "Found an em or en dash. Use a period, colon or comma instead."; exit 1
+          fi

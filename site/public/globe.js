@@ -28,7 +28,7 @@
     canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
     const wide = W > 1000;
     R = Math.min(W, H) * (wide ? 0.38 : 0.42);
-    cx = wide ? W * 0.68 : W * 0.5;
+    cx = wide ? W * 0.62 : W * 0.5;
     cy = H * (wide ? 0.5 : 0.5);
   }
 
@@ -224,7 +224,7 @@
         callout.classList.toggle("above", W < 700);
         callout.classList.toggle("flip", W >= 700 && at[0] > W - 280);
         const s = Math.abs(Math.round(dt)), mm = String(Math.floor(s / 60)).padStart(2, "0"), sc = String(s % 60).padStart(2, "0");
-        callout.innerHTML = `${dt < 0 ? "T-" : "T+"}${mm}:${sc} &nbsp;·&nbsp; predicted miss <b>${e.missLabel}</b><br>${e.label}`;
+        window.dodgeSetHTML(callout, `${dt < 0 ? "T-" : "T+"}${mm}:${sc} &nbsp;·&nbsp; predicted miss <b>${e.missLabel}</b><br>${e.label}`);
       }
     } else if (callout) callout.style.opacity = "0";
   }

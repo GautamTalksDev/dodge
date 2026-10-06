@@ -1,0 +1,6 @@
+Contact: https://github.com/GautamTalksDev/dodge/security/advisories/new
+Contact: mailto:developwith.gt@gmail.com
+Expires: 2027-09-30T23:59:59Z
+Preferred-Languages: en
+Canonical: https://dodge.gautamkhosla.com/.well-known/security.txt
+Policy: https://github.com/GautamTalksDev/dodge/security/policy

@@ -8,3 +8,6 @@ site/build/fonts.css
 
 public-data/
 out/
+.wrangler/
+site/.wrangler/
+site/build/fonts2.css

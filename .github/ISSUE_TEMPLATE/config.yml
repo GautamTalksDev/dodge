@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/GautamTalksDev/dodge/security/advisories/new
+    about: Please report security issues privately, never in a public issue.
+  - name: How DODGE works
+    url: https://dodge.gautamkhosla.com/method/
+    about: Read the method and its limits before reporting a number as wrong.

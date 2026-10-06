@@ -1,50 +1,156 @@
-# Once a day: screen the next 24 hours of Starlink against everything else.
-# The site reads the result from the `data` branch, which holds only the
-# latest files and is replaced every day, so git history stays small. Each
-# day's summary and full event list also go into that day's release.
+# Daily screen, then seal and sign.
+#
+#   build    contents: read          tests, screen the next 24 h, build yesterday's manifest
+#   attest   id-token + attestations  SHA256SUMS over every output, Sigstore attestation
+#   publish  contents: write          release uploads, replace the `data` branch
+#
+# Only `build` runs third-party code (numpy, sgp4), and it holds no write token.
+# The attestation covers yesterday's chained manifest and every file published
+# today, so `gh attestation verify` proves this workflow produced them.
 name: screen
 on:
   schedule:
     - cron: "47 1 * * *"
   workflow_dispatch:
-permissions:
-  contents: write
+    inputs:
+      seal_day:
+        description: "Day to seal (YYYY-MM-DD). Default: yesterday (UTC)."
+        required: false
+        default: ""
+permissions: {}
 concurrency:
-  group: screen
+  group: data-publish
   cancel-in-progress: false
 jobs:
-  screen:
+  build:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    permissions:
+      contents: read
     env:
       GH_TOKEN: ${{ github.token }}
+      SEAL_INPUT: ${{ inputs.seal_day }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - name: Install the orbit model
-        run: python3 -m venv .venv && .venv/bin/pip install --quiet -r requirements.txt
+      - uses: step-security/harden-runner@351661ca32ac09a36dc5ee2d536e3128f2a3c8ed # v2.22.0
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install the orbit model (hash-pinned)
+        run: python3 -m venv .venv && .venv/bin/pip install --quiet --require-hashes --no-deps -r requirements.txt
+      - name: Tests (the screen does not publish if these fail)
+        run: .venv/bin/python -m unittest discover -s tests -p "test_*.py"
       - name: Fetch the last two days of recordings
         run: |
           mkdir -p work
           for d in $(date -u -d yesterday +%F) $(date -u +%F); do
             gh release download "day-$d" -D work -p "gp-*" -p "satcat-*" -p "supgp-sources-*" 2>/dev/null || echo "no data for $d"
           done
-          ls -la work
-      - name: Tests
-        run: .venv/bin/python -m unittest discover -s tests -p "test_*.py"
       - name: Screen and attribute
         run: .venv/bin/python engine/daily.py work out
-      - name: Archive the day in its release
+      - name: Build the seal for the finished day
+        run: |
+          SEAL="${SEAL_INPUT:-$(date -u -d yesterday +%F)}"
+          if ! [[ "$SEAL" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then echo "bad seal_day"; exit 1; fi
+          PREV=$(date -u -d "$SEAL -1 day" +%F)
+          mkdir -p seal prev
+          gh release download "day-$SEAL" -D seal -p "gp-*" -p "satcat-*" -p "supgp-sources-*" -p "events-*" -p "summary-*" 2>/dev/null || true
+          gh release download "day-$PREV" -D prev -p "manifest-*" 2>/dev/null || true
+          if ls seal/* >/dev/null 2>&1; then
+            python3 tools/manifest.py "$SEAL" seal "prev/manifest-$PREV.json"
+            cp "seal/manifest-$SEAL.json" out/
+            echo "$SEAL" > out/SEAL_DAY
+          fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: screen-out
+          path: out/
+          retention-days: 7
+          if-no-files-found: error
+
+  attest:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    outputs:
+      day: ${{ steps.sums.outputs.day }}
+    steps:
+      - uses: step-security/harden-runner@351661ca32ac09a36dc5ee2d536e3128f2a3c8ed # v2.22.0
+        with:
+          egress-policy: audit
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: screen-out
+          path: out
+      - name: SHA256SUMS over everything published today
+        id: sums
         run: |
           D=$(date -u +%F)
-          cp out/days/$D.json out/summary-$D.json
-          gh release upload "day-$D" out/events-$D.json.gz out/summary-$D.json --clobber
-      - name: Publish the data branch
+          cd out
+          sha256sum events-*.json.gz latest.json replay.json starlink.json days/*.json manifest-*.json 2>/dev/null > "SHA256SUMS-$D" || true
+          cat "SHA256SUMS-$D"
+          test -s "SHA256SUMS-$D"
+          echo "day=$D" >> "$GITHUB_OUTPUT"
+      - uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        id: att
+        with:
+          subject-checksums: out/SHA256SUMS-${{ steps.sums.outputs.day }}
+      - name: Keep the Sigstore bundle with the data
+        env:
+          BUNDLE: ${{ steps.att.outputs.bundle-path }}
+          D: ${{ steps.sums.outputs.day }}
+        run: cp "$BUNDLE" "out/attestation-$D.sigstore.json"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: screen-signed
+          path: out/
+          retention-days: 7
+          if-no-files-found: error
+
+  publish:
+    needs: attest
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      D: ${{ needs.attest.outputs.day }}
+    steps:
+      - uses: step-security/harden-runner@351661ca32ac09a36dc5ee2d536e3128f2a3c8ed # v2.22.0
+        with:
+          egress-policy: audit
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: screen-signed
+          path: out
+      - name: "Today's release: events, summary, checksums, attestation"
         run: |
-          mkdir pub && cp out/latest.json out/replay.json out/starlink.json pub/
+          gh release view "day-$D" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
+            gh release create "day-$D" --repo "$GITHUB_REPOSITORY" --title "Orbit data $D" --latest=false \
+              --notes "Orbit recordings first seen on $D (UTC) from CelesTrak, and that day's screen. Verify: see docs/VERIFYING.md."
+          cp "out/days/$D.json" "out/summary-$D.json"
+          gh release upload "day-$D" --repo "$GITHUB_REPOSITORY" --clobber \
+            "out/events-$D.json.gz" "out/summary-$D.json" "out/SHA256SUMS-$D" "out/attestation-$D.sigstore.json"
+      - name: Seal the finished day
+        run: |
+          if [ -f out/SEAL_DAY ]; then
+            S=$(cat out/SEAL_DAY)
+            gh release upload "day-$S" --repo "$GITHUB_REPOSITORY" --clobber "out/manifest-$S.json"
+            echo "sealed day-$S (attested in day-$D)"
+          fi
+      - name: Replace the data branch with the latest files
+        run: |
+          mkdir pub && cp out/latest.json out/replay.json out/starlink.json "out/SHA256SUMS-$D" pub/
           cd pub
           git init -q -b data
           git config user.name "dodge-screen"
           git config user.email "dodge-screen@users.noreply.github.com"
           git add -A
-          git commit -q -m "data: $(date -u +%FT%H:%MZ)"
+          git commit -q -m "data: $D"
           git push -q --force "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" data
