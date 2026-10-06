@@ -58,11 +58,16 @@ def satrec(o):
 
 
 def latest(rows):
-    """Newest element set per (source kind, NORAD id)."""
+    """Best element set per (source kind, NORAD id).
+
+    Operator ephemerides (SupGP, src "supgp-*") beat public radar-based sets
+    for the same object; within a kind the newest epoch wins.
+    """
     best = {}
     for r in rows:
         k = ("star" if r["src"] == "starlink-supgp" else "other", r["NORAD_CAT_ID"])
-        if k not in best or r["EPOCH"] > best[k]["EPOCH"]:
+        rank = (r["src"].startswith("supgp-"), r["EPOCH"])
+        if k not in best or rank > (best[k]["src"].startswith("supgp-"), best[k]["EPOCH"]):
             best[k] = r
     return best
 

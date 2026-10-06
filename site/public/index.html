@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DODGE: who makes Starlink dodge</title>
+<meta name="description" content="Every day, thousands of objects pass within 5 km of a Starlink satellite. DODGE is the open, daily record of who is on the other side, from public data.">
+<meta property="og:title" content="DODGE: who makes Starlink dodge">
+<meta property="og:description" content="The open, daily record of close approaches to Starlink, and who is on the other side.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://dodge.gautamkhosla.com/">
+<meta property="og:image" content="https://dodge.gautamkhosla.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#05070d">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/fonts/space-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/" aria-label="DODGE home"><span class="mark" aria-hidden="true"></span>DODGE</a>
+  <nav>
+    <a href="#closest">Closest</a>
+    <a href="#who">Who</a>
+    <a href="#sharing">Sharing</a>
+    <a href="/method/">Method</a>
+    <a href="https://github.com/GautamTalksDev/dodge" rel="noopener">Data</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero" aria-labelledby="h1">
+    <canvas id="globe" aria-label="Globe replaying the last screened day of close approaches to Starlink satellites" role="img"></canvas>
+    <div class="hero-copy">
+      <p class="eyebrow" id="day-label">Daily screening of low Earth orbit</p>
+      <h1 id="h1">Who makes Starlink <em>dodge</em>.</h1>
+      <p class="lede">In the next 24 hours, Starlink satellites will pass within 5 km of another object <strong id="lede-count">thousands of</strong> times. SpaceX reports moving out of the way more than 355,000 times a year. This is the open record of who is on the other side.</p>
+      <div class="hud" aria-live="off">
+        <span class="clock" id="clock">--:--</span><span class="sep">UTC</span>
+        <span class="tally"><b id="tally">0</b> approaches so far</span>
+      </div>
+    </div>
+    <ul class="legend" aria-label="Legend">
+      <li><i class="dot star"></i>Starlink satellite</li>
+      <li><i class="dot near"></i>Approach under 5 km</li>
+      <li><i class="dot close"></i>Under 1 km</li>
+    </ul>
+  </section>
+
+  <section class="stats" aria-label="The next 24 hours">
+    <div class="stat"><b id="s-5">-</b><span>approaches under 5 km</span></div>
+    <div class="stat"><b id="s-1">-</b><span>under 1 km</span></div>
+    <div class="stat"><b id="s-05">-</b><span>under 500 m</span></div>
+    <div class="stat"><b id="s-min">-</b><span>closest predicted pass</span></div>
+    <div class="stat"><b id="s-objs">-</b><span>objects screened against <span id="s-star">-</span> Starlinks</span></div>
+  </section>
+
+  <section class="block" id="findings" aria-labelledby="h-find">
+    <h2 id="h-find">What today's screen says</h2>
+    <ol class="findings" id="findings-list"><li class="loading">Loading the latest screen…</li></ol>
+  </section>
+
+  <section class="block" id="closest" aria-labelledby="h-closest">
+    <div class="block-head">
+      <h2 id="h-closest">Closest predicted passes</h2>
+      <p class="note">Screening grade: from public orbit data, accurate to roughly a kilometre. These are not collision probabilities.</p>
+    </div>
+    <div class="table-wrap"><table class="data" id="closest-table">
+      <thead><tr><th>Time (UTC)</th><th>Starlink</th><th>Other object</th><th>Owner</th><th>Type</th><th class="num">Miss</th><th class="num">Closing speed</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </section>
+
+  <section class="block" id="who" aria-labelledby="h-who">
+    <div class="block-head">
+      <h2 id="h-who">Who is on the other side</h2>
+      <p class="note">Raw counts mostly follow how much hardware sits at Starlink's altitude. The per object column shows how often each object comes close.</p>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Group approaches by">
+      <button role="tab" aria-selected="true" data-tab="owner">Countries</button>
+      <button role="tab" aria-selected="false" data-tab="fleet">Fleets</button>
+      <button role="tab" aria-selected="false" data-tab="object">Objects</button>
+      <button role="tab" aria-selected="false" data-tab="dead">Nobody steering</button>
+    </div>
+    <div class="table-wrap"><table class="data" id="who-table"><thead></thead><tbody></tbody></table></div>
+  </section>
+
+  <section class="block" id="sharing" aria-labelledby="h-share">
+    <div class="block-head">
+      <h2 id="h-share">Who tells everyone where they are</h2>
+      <p class="note">Operators that publish their own orbit predictions publicly, through CelesTrak's supplemental data, let everyone else screen against accurate positions instead of radar estimates. Some operators share privately with US Space Command or TraCSS instead; that does not show here.</p>
+    </div>
+    <div class="share-grid" id="share-grid"></div>
+  </section>
+
+  <section class="block cta" aria-labelledby="h-open">
+    <h2 id="h-open">Open by default</h2>
+    <p>Every number on this page is rebuilt each day from public data, by code anyone can read and rerun. <a href="/method/">Read the method</a>, <a href="https://github.com/GautamTalksDev/dodge">download the data</a>, or check our work.</p>
+  </section>
+</main>
+
+<footer class="foot">
+  <p>Orbit data: <a href="https://celestrak.org">CelesTrak</a>. Starlink positions come from SpaceX's own published ephemerides (CelesTrak SupGP). DODGE does not use Space-Track data.</p>
+  <p>Built by <a href="https://gautamkhosla.com">Gautam Khosla</a>. Independent: not affiliated with SpaceX, Starlink or any operator named here. <span id="gen"></span></p>
+</footer>
+<script src="/globe.js" defer></script>
+<script src="/app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Method: how DODGE screens low Earth orbit</title>
+<meta name="description" content="Sources, screening method, validation and limits of DODGE, the open daily record of close approaches to Starlink.">
+<meta name="theme-color" content="#05070d">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/" aria-label="DODGE home"><span class="mark" aria-hidden="true"></span>DODGE</a>
+  <nav><a href="/">Today</a><a href="https://github.com/GautamTalksDev/dodge" rel="noopener">Code and data</a></nav>
+</header>
+<main class="prose">
+  <p class="eyebrow">Method</p>
+  <h1>How DODGE works</h1>
+  <p>DODGE predicts every pass within 5 km between a Starlink satellite and any other tracked object over the next 24 hours, then asks who owns the other object. It runs once a day on public data, and every step is in the <a href="https://github.com/GautamTalksDev/dodge">repository</a>.</p>
+
+  <h2>1. Sources</h2>
+  <ul>
+    <li><b>Starlink:</b> CelesTrak <a href="https://celestrak.org/NORAD/elements/supplemental/">SupGP</a> element sets, fitted from the ephemerides SpaceX publishes. These are far more accurate than radar-based public sets.</li>
+    <li><b>Everything else:</b> CelesTrak GP data for active satellites, analyst objects, the last 30 days of launches, every object named as debris and every rocket body. That is about 30,000 objects.</li>
+    <li><b>Owner, type and launch:</b> the CelesTrak SATCAT.</li>
+    <li><b>Who publishes orbits:</b> the list of operator files in CelesTrak SupGP that day.</li>
+  </ul>
+  <p>DODGE does not use Space-Track. Its user agreement forbids passing on analysis of its data without Department of Defense approval. CelesTrak serves only the latest orbit for each object, so DODGE records its own history every 4 hours, starting 6 October 2026. The recordings are public as daily releases in the repository.</p>
+
+  <h2>2. Screening</h2>
+  <ol>
+    <li><b>Select.</b> Use the newest element set per object. Drop sets more than 7 days old, and drop objects whose perigee and apogee never reach the Starlink altitude band. Starlink-to-Starlink passes are left out, since SpaceX coordinates its own fleet.</li>
+    <li><b>Propagate.</b> Run SGP4 (David Vallado's reference implementation, via the <code>sgp4</code> package) for every object on a 10 second grid.</li>
+    <li><b>Find candidates.</b> At each step, a spatial hash with 100 km cells finds every Starlink-to-other pair closer than 100 km.</li>
+    <li><b>Estimate.</b> For each candidate, a linear relative-motion fit gives the time and distance of closest approach within that step. Two objects 100 km apart accelerate relative to each other by less than 0.1 m/s², so the linear error over 5 seconds is about a metre.</li>
+    <li><b>Refine.</b> Re-propagate every pass estimated under 10 km at 50 millisecond steps. Report those under 5 km.</li>
+  </ol>
+
+  <h2>3. Validation</h2>
+  <ul>
+    <li><b>Nothing missed.</b> On a random sample of 1,500 Starlinks against 1,500 other objects over 3 hours of real data, a brute-force check found 80 passes under 5 km. That check tested every pair every second and refined the minimum. The fast screen found all 80. The check is <code>tests/check_recall.py</code>.</li>
+    <li><b>Spatial hash is exact.</b> Unit tests compare the hash with a brute-force distance check on random point clouds, including points on cell edges, and get identical pairs.</li>
+    <li><b>Physics sanity check.</b> About 4,500 objects share the 160 to 600 km band with 11,000 Starlinks, and closing speeds run near 10 km/s. A kinetic-gas estimate predicts about 600 passes under 5 km per hour. The screen finds about 520 per hour.</li>
+    <li><b>Order of magnitude against SpaceX.</b> DODGE finds about 450 passes under 1 km per day, roughly 160,000 a year. SpaceX reported more than 355,000 avoidance maneuvers in twelve months. It maneuvers at a collision probability of 3 in 10 million, a far more cautious threshold than a fixed 1 km.</li>
+  </ul>
+
+  <h2>4. What the numbers do not mean</h2>
+  <ul>
+    <li><b>Not collision probabilities.</b> Public element sets for non-Starlink objects are typically good to around a kilometre near their epoch, and worse after that. A predicted 300 m pass might really be 50 m or 2 km. DODGE is screening grade: it shows who comes close and how often, and the totals are far more reliable than any single pass.</li>
+    <li><b>Not misconduct.</b> Most close passes involve small satellites without thrusters, or old hardware. They are where physics puts them. The conduct questions DODGE tracks are narrower: does an operator publish its orbits, is its hardware registered and identified, and does it leave stages and debris in busy shells.</li>
+    <li><b>Publishing is not the only way to share.</b> Some operators share ephemerides privately with US Space Command, TraCSS or SpaceX's Stargaze. DODGE can only see what is public.</li>
+  </ul>
+
+  <h2>5. Corrections</h2>
+  <p>If a number here is wrong, open an issue on <a href="https://github.com/GautamTalksDev/dodge/issues">GitHub</a> with the object and the date. Corrections are logged in the repository.</p>
+</main>
+<footer class="foot">
+  <p>Built by <a href="https://gautamkhosla.com">Gautam Khosla</a>. Independent: not affiliated with SpaceX, Starlink or any operator named here. Orbit data: <a href="https://celestrak.org">CelesTrak</a>.</p>
+</footer>
+</body>
+</html>

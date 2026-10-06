@@ -2,3 +2,7 @@ work/
 __pycache__/
 *.pyc
 .venv/
+site/public/public-data
+site/build/land110.json
+site/build/fonts.css
+public-data/events-*.json.gz

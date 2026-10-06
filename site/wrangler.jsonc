@@ -1,0 +1,13 @@
+{
+  // DODGE website: static assets only, on a subdomain of gautamkhosla.com.
+  // The daily data is read from the GitHub repository, so the site never
+  // needs redeploying when a new screen lands.
+  "name": "dodge",
+  "compatibility_date": "2026-10-01",
+  "routes": [{ "pattern": "dodge.gautamkhosla.com", "custom_domain": true }],
+  "workers_dev": false,
+  "assets": {
+    "directory": "./public",
+    "not_found_handling": "404-page"
+  }
+}

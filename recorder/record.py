@@ -33,6 +33,11 @@ SOURCES = [
     ("debris", GP + "NAME=DEB"),
     ("rocket-bodies", GP + "NAME=R/B"),
 ]
+# Other operators that publish their own ephemerides in LEO. Where these
+# exist, screening uses them instead of the public radar-based sets.
+SUP = "https://celestrak.org/NORAD/elements/supplemental/sup-gp.php?FORMAT=json&FILE="
+for _f in ("planet", "oneweb", "kuiper", "ast", "iridium", "orbcomm", "iss", "css", "eumetsat", "telesat"):
+    SOURCES.append(("supgp-" + _f, SUP + _f))
 SATCAT = "https://celestrak.org/pub/satcat.csv"
 UA = "DODGE recorder (+https://github.com/GautamTalksDev/dodge)"
 KEEP = (

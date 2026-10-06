@@ -12,6 +12,7 @@ supgp-sources-*.json). OUTDIR gets:
 import glob
 import gzip
 import json
+import math
 import os
 import sys
 import time
@@ -23,6 +24,39 @@ import attribute  # noqa: E402
 import screen  # noqa: E402
 
 TOP_EVENTS = 300
+
+
+def gmst(t):
+    """Greenwich mean sidereal angle in radians (IAU 1982), good to visualise."""
+    jd, fr = screen.jdfr([t])
+    d = (jd[0] - 2451545.0) + fr[0]
+    tt = d / 36525.0
+    g = 280.46061837 + 360.98564736629 * d + 0.000387933 * tt * tt - tt ** 3 / 38710000.0
+    return math.radians(g % 360.0)
+
+
+def where(o, t):
+    """Geocentric lat, lon (deg) and altitude (km) of object o at time t."""
+    s = screen.satrec(o)
+    jd, fr = screen.jdfr([t])
+    e, r, _ = s.sgp4(jd[0], fr[0])
+    if e:
+        return None
+    x, y, z = r
+    rr = math.sqrt(x * x + y * y + z * z)
+    lon = math.degrees(math.atan2(y, x) - gmst(t))
+    lon = (lon + 180.0) % 360.0 - 180.0
+    return round(math.degrees(math.asin(z / rr)), 2), round(lon, 2), round(rr - 6378.137, 1)
+
+
+def compact_elements(objs):
+    """[inc, raan, argp, mean anomaly, mean motion, ecc, epoch unix s] per object, for the browser globe."""
+    out = []
+    for o in objs:
+        ep = screen.parse_epoch(o["EPOCH"]).timestamp()
+        out.append([round(float(o[k]), 4) for k in ("INCLINATION", "RA_OF_ASC_NODE", "ARG_OF_PERICENTER", "MEAN_ANOMALY")]
+                   + [round(float(o["MEAN_MOTION"]), 6), round(float(o["ECCENTRICITY"]), 6), int(ep)])
+    return out
 
 
 def newest(pattern):
@@ -54,7 +88,25 @@ def main(work, out):
     with open(raw, "w") as f:
         json.dump({"stats": stats, "events": slim, "screened_others": screened}, f)
     summary = attribute.main(raw, satcat, os.path.join(out, f"attr-{day}.json"), sup)
+    sc = attribute.load_satcat(satcat)
+    owners = json.load(open(os.path.join(HERE, "owners.json"), encoding="utf-8"))
+    for e, s in zip(events[:TOP_EVENTS], slim[:TOP_EVENTS]):
+        s["at"] = where(e["starlink"], e["tca"])
+        r = sc.get(int(s["other"]["id"]), {})
+        own = r.get("OWNER") or "UNK"
+        s["other"].update(owner=own, owner_name=owners.get(own, own),
+                          type=attribute.TYPES.get(r.get("OBJECT_TYPE"), "Unknown"), launched=r.get("LAUNCH_DATE"))
     summary["closest"] = slim[:TOP_EVENTS]
+    # Every approach, coarsely, for the globe's 24 h replay: [unix s, lat, lon, miss m].
+    replay = []
+    for e in events:
+        p = where(e["starlink"], e["tca"])
+        if p:
+            replay.append([int(e["tca"].timestamp()), round(p[0], 1), round(p[1], 1), int(e["miss_km"] * 1000)])
+    with open(os.path.join(out, "replay.json"), "w") as f:
+        json.dump(replay, f, separators=(",", ":"))
+    with open(os.path.join(out, "starlink.json"), "w") as f:
+        json.dump({"generated_at": t0.isoformat(), "elements": compact_elements(star)}, f, separators=(",", ":"))
     summary["generated_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
     summary["day"] = day
     if sup:
