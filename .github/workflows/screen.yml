@@ -53,6 +53,8 @@ jobs:
         run: |
           SEAL="${SEAL_INPUT:-$(date -u -d yesterday +%F)}"
           if ! [[ "$SEAL" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then echo "bad seal_day"; exit 1; fi
+          # Only finished days can be sealed: today still receives recordings and its screen.
+          if [[ ! "$SEAL" < "$(date -u +%F)" ]]; then echo "seal_day must be before today (UTC)"; exit 1; fi
           PREV=$(date -u -d "$SEAL -1 day" +%F)
           mkdir -p seal prev
           gh release download "day-$SEAL" -D seal -p "gp-*" -p "satcat-*" -p "supgp-sources-*" -p "events-*" -p "summary-*" 2>/dev/null || true
@@ -131,6 +133,10 @@ jobs:
           path: out
       - name: "Today's release: events, summary, checksums, attestation"
         run: |
+          # A sealed release is final: never write into it again.
+          if gh release view "day-$D" --repo "$GITHUB_REPOSITORY" --json assets -q ".assets[].name" 2>/dev/null | grep -q "^manifest-"; then
+            echo "day-$D is already sealed; refusing to change it"; exit 1
+          fi
           gh release view "day-$D" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
             gh release create "day-$D" --repo "$GITHUB_REPOSITORY" --title "Orbit data $D" --latest=false \
               --notes "Orbit recordings first seen on $D (UTC) from CelesTrak, and that day's screen. Verify: see docs/VERIFYING.md."
