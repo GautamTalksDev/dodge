@@ -57,17 +57,24 @@ def satrec(o):
     return s
 
 
-def latest(rows):
+def latest(rows, t0=None):
     """Best element set per (source kind, NORAD id).
 
     Operator ephemerides (SupGP, src "supgp-*") beat public radar-based sets
-    for the same object; within a kind the newest epoch wins.
+    for the same object. Within a kind, the epoch closest to t0 wins: SupGP
+    files can carry several fits per object, some dated ahead (predictions).
+    Without t0, the newest epoch wins.
     """
+    def rank(r):
+        sup = r["src"].startswith("supgp-")
+        if t0 is None:
+            return (sup, r["EPOCH"])
+        return (sup, -abs((parse_epoch(r["EPOCH"]) - t0).total_seconds()))
+
     best = {}
     for r in rows:
         k = ("star" if r["src"] == "starlink-supgp" else "other", r["NORAD_CAT_ID"])
-        rank = (r["src"].startswith("supgp-"), r["EPOCH"])
-        if k not in best or rank > (best[k]["src"].startswith("supgp-"), best[k]["EPOCH"]):
+        if k not in best or rank(r) > rank(best[k]):
             best[k] = r
     return best
 
@@ -81,7 +88,7 @@ def load_rows(paths):
 
 
 def select(rows, t0):
-    best = latest(rows)
+    best = latest(rows, t0)
     star = [r for (kind, _), r in best.items() if kind == "star"]
     star_ids = {r["NORAD_CAT_ID"] for r in star}
     lo = min(perigee_apogee(r)[0] for r in star) - BAND_MARGIN_KM
