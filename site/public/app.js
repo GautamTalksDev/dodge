@@ -1,7 +1,7 @@
 // DODGE page: reads the daily screen and fills in the page.
 (function () {
   "use strict";
-  const REMOTE = "https://raw.githubusercontent.com/GautamTalksDev/dodge/main/public-data/";
+  const REMOTE = "https://raw.githubusercontent.com/GautamTalksDev/dodge/data/";
   const local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
   const BASE = local ? "/public-data/" : REMOTE;
   const $ = (id) => document.getElementById(id);

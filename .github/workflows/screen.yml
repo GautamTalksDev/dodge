@@ -1,5 +1,7 @@
-# Once a day: screen the next 24 hours of Starlink against everything else and
-# publish the summary the site reads (public-data/latest.json).
+# Once a day: screen the next 24 hours of Starlink against everything else.
+# The site reads the result from the `data` branch, which holds only the
+# latest files and is replaced every day, so git history stays small. Each
+# day's summary and full event list also go into that day's release.
 name: screen
 on:
   schedule:
@@ -24,20 +26,25 @@ jobs:
         run: |
           mkdir -p work
           for d in $(date -u -d yesterday +%F) $(date -u +%F); do
-            gh release download "day-$d" -D work 2>/dev/null || echo "no data for $d"
+            gh release download "day-$d" -D work -p "gp-*" -p "satcat-*" -p "supgp-sources-*" 2>/dev/null || echo "no data for $d"
           done
           ls -la work
       - name: Tests
         run: .venv/bin/python -m unittest discover -s tests -p "test_*.py"
       - name: Screen and attribute
-        run: .venv/bin/python engine/daily.py work public-data
-      - name: Publish
+        run: .venv/bin/python engine/daily.py work out
+      - name: Archive the day in its release
         run: |
           D=$(date -u +%F)
-          gh release upload "day-$D" public-data/events-$D.json.gz --clobber
-          rm public-data/events-*.json.gz
+          cp out/days/$D.json out/summary-$D.json
+          gh release upload "day-$D" out/events-$D.json.gz out/summary-$D.json --clobber
+      - name: Publish the data branch
+        run: |
+          mkdir pub && cp out/latest.json out/replay.json out/starlink.json pub/
+          cd pub
+          git init -q -b data
           git config user.name "dodge-screen"
           git config user.email "dodge-screen@users.noreply.github.com"
-          git add public-data
-          git commit -q -m "screen: $D"
-          git pull -q --rebase && git push -q
+          git add -A
+          git commit -q -m "data: $(date -u +%FT%H:%MZ)"
+          git push -q --force "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" data

@@ -90,13 +90,19 @@ def main(work, out):
     summary = attribute.main(raw, satcat, os.path.join(out, f"attr-{day}.json"), sup)
     sc = attribute.load_satcat(satcat)
     owners = json.load(open(os.path.join(HERE, "owners.json"), encoding="utf-8"))
-    for e, s in zip(events[:TOP_EVENTS], slim[:TOP_EVENTS]):
+    # Keep every pass under 1 km (for the live countdown) and at least TOP_EVENTS.
+    keep = max(TOP_EVENTS, sum(1 for e in events if e["miss_km"] < 1.0))
+    closest = [json.loads(json.dumps(s)) for s in slim[:keep]]  # copies: slim stays whole for the release file
+    for e, s in zip(events[:keep], closest):
         s["at"] = where(e["starlink"], e["tca"])
+        # Elements of both objects, so the page can draw the two orbits crossing.
+        s["starlink"]["el"] = compact_elements([e["starlink"]])[0]
+        s["other"]["el"] = compact_elements([e["other"]])[0]
         r = sc.get(int(s["other"]["id"]), {})
         own = r.get("OWNER") or "UNK"
         s["other"].update(owner=own, owner_name=owners.get(own, own),
                           type=attribute.TYPES.get(r.get("OBJECT_TYPE"), "Unknown"), launched=r.get("LAUNCH_DATE"))
-    summary["closest"] = slim[:TOP_EVENTS]
+    summary["closest"] = closest
     # Every approach, coarsely, for the globe's 24 h replay: [unix s, lat, lon, miss m].
     replay = []
     for e in events:
