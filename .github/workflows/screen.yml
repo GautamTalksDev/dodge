@@ -1,0 +1,43 @@
+# Once a day: screen the next 24 hours of Starlink against everything else and
+# publish the summary the site reads (public-data/latest.json).
+name: screen
+on:
+  schedule:
+    - cron: "47 1 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: screen
+  cancel-in-progress: false
+jobs:
+  screen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Install the orbit model
+        run: python3 -m venv .venv && .venv/bin/pip install --quiet -r requirements.txt
+      - name: Fetch the last two days of recordings
+        run: |
+          mkdir -p work
+          for d in $(date -u -d yesterday +%F) $(date -u +%F); do
+            gh release download "day-$d" -D work 2>/dev/null || echo "no data for $d"
+          done
+          ls -la work
+      - name: Tests
+        run: .venv/bin/python -m unittest discover -s tests -p "test_*.py"
+      - name: Screen and attribute
+        run: .venv/bin/python engine/daily.py work public-data
+      - name: Publish
+        run: |
+          D=$(date -u +%F)
+          gh release upload "day-$D" public-data/events-$D.json.gz --clobber
+          rm public-data/events-*.json.gz
+          git config user.name "dodge-screen"
+          git config user.email "dodge-screen@users.noreply.github.com"
+          git add public-data
+          git commit -q -m "screen: $D"
+          git pull -q --rebase && git push -q
