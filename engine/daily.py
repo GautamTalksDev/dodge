@@ -103,12 +103,16 @@ def main(work, out):
         s["other"].update(owner=own, owner_name=owners.get(own, own),
                           type=attribute.TYPES.get(r.get("OBJECT_TYPE"), "Unknown"), launched=r.get("LAUNCH_DATE"))
     summary["closest"] = closest
-    # Every approach, coarsely, for the globe's 24 h replay: [unix s, lat, lon, miss m].
+    # Every approach, coarsely, for the globe's 24 h replay:
+    # [unix s, lat, lon, miss m, type (0 satellite, 1 rocket body, 2 debris, 3 unknown), unregistered 0/1].
+    tcode = {"PAY": 0, "R/B": 1, "DEB": 2}
     replay = []
     for e in events:
         p = where(e["starlink"], e["tca"])
         if p:
-            replay.append([int(e["tca"].timestamp()), round(p[0], 1), round(p[1], 1), int(e["miss_km"] * 1000)])
+            r = sc.get(int(e["other"]["NORAD_CAT_ID"]), {})
+            replay.append([int(e["tca"].timestamp()), round(p[0], 1), round(p[1], 1), int(e["miss_km"] * 1000),
+                           tcode.get(r.get("OBJECT_TYPE"), 3), int((r.get("OWNER") or "") == "TBD")])
     with open(os.path.join(out, "replay.json"), "w") as f:
         json.dump(replay, f, separators=(",", ":"))
     with open(os.path.join(out, "starlink.json"), "w") as f:

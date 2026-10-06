@@ -7,15 +7,17 @@
 <meta name="description" content="Sources, screening method, validation and limits of DODGE, the open daily record of close approaches to Starlink.">
 <meta name="theme-color" content="#05070d">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-<header class="top">
-  <a class="brand" href="/" aria-label="DODGE home"><span class="mark" aria-hidden="true"></span>DODGE</a>
-  <nav><a href="/">Today</a><a href="https://github.com/GautamTalksDev/dodge" rel="noopener">Code and data</a></nav>
+<header class="bar">
+  <a class="brand" href="/" aria-label="DODGE, home"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="9" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="16" cy="4" r="2.4" fill="#f4733b"/></svg>DODGE</a>
+  <span></span>
+  <nav class="nav" aria-label="Site"><a class="keep" href="/">Today</a><a class="keep" href="https://github.com/GautamTalksDev/dodge" rel="noopener">Code and data</a></nav>
 </header>
 <main class="prose">
-  <p class="eyebrow">Method</p>
+  <div class="eyebrow micro"><span class="rule"></span><span>Method</span></div>
   <h1>How DODGE works</h1>
   <p>DODGE predicts every pass within 5 km between a Starlink satellite and any other tracked object over the next 24 hours, then asks who owns the other object. It runs once a day on public data, and every step is in the <a href="https://github.com/GautamTalksDev/dodge">repository</a>.</p>
 
@@ -56,7 +58,7 @@
   <p>If a number here is wrong, open an issue on <a href="https://github.com/GautamTalksDev/dodge/issues">GitHub</a> with the object and the date. Corrections are logged in the repository.</p>
 </main>
 <footer class="foot">
-  <p>Built by <a href="https://gautamkhosla.com">Gautam Khosla</a>. Independent: not affiliated with SpaceX, Starlink or any operator named here. Orbit data: <a href="https://celestrak.org">CelesTrak</a>.</p>
+  <div><p>Built by <a href="https://gautamkhosla.com">Gautam Khosla</a>. Independent: not affiliated with SpaceX, Starlink or any operator named here. Orbit data: <a href="https://celestrak.org">CelesTrak</a>.</p></div>
 </footer>
 </body>
 </html>
