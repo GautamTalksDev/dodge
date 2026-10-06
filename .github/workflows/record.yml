@@ -1,0 +1,43 @@
+# Records orbit history every 4 hours. CelesTrak keeps only the latest
+# element set, so each UTC day's new element sets go into a release asset
+# (day-YYYY-MM-DD) instead of the git history, which stays small.
+name: record
+on:
+  schedule:
+    - cron: "23 */4 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: record
+  cancel-in-progress: false
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Fetch today's file so far
+        run: |
+          D=$(date -u +%F)
+          echo "D=$D" >> "$GITHUB_ENV"
+          mkdir -p work
+          gh release download "day-$D" -D work 2>/dev/null || echo "first run of $D"
+      - name: Record
+        run: python3 recorder/record.py work | tee run.json
+      - name: Publish the day's file
+        run: |
+          gh release view "day-$D" >/dev/null 2>&1 || \
+            gh release create "day-$D" --title "Orbit data $D" --latest=false \
+              --notes "Element sets first seen on $D (UTC), from CelesTrak. See README for sources and caveats."
+          gh release upload "day-$D" work/* --clobber
+      - name: Log the run
+        run: |
+          cat run.json >> data/runs.ndjson
+          git config user.name "dodge-recorder"
+          git config user.email "dodge-recorder@users.noreply.github.com"
+          git add data/runs.ndjson
+          git commit -q -m "record: $(date -u +%FT%H:%MZ)"
+          git pull -q --rebase && git push -q
