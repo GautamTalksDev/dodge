@@ -15,12 +15,16 @@
   const SIGNAL = [244, 115, 59];
   const sig = (a) => `rgba(${SIGNAL[0]},${SIGNAL[1]},${SIGNAL[2]},${a})`;
 
-  let W = 0, H = 0, DPR = Math.min(devicePixelRatio || 1, 2), R = 1, cx = 0, cy = 0;
+  let W = 0, H = 0, DPR = Math.min(devicePixelRatio || 1, 1.5), R = 1, cx = 0, cy = 0;
   let land = [], sats = [], replay = [], window0 = 0;
   const cam = { spin: 0, tilt: 0.32, zoom: 1, lift: 0 }, target = { spin: null, tilt: 0.32, zoom: 1, lift: 0 };
   let mode = "live", filter = null, focusEv = null, paused = reduce, dragging = null, userMoved = false;
   let replayStart = performance.now(), focusStart = performance.now(), lastFrame = 0, raf = 0, visible = true;
   let slowFrames = 0, satStride = 1;
+  // Satellite positions are recomputed at about 20 Hz and cached between;
+  // while the page is scrolling, the whole globe drops to about 30 fps.
+  let satCache = null, satCacheAt = 0, scrolling = 0, lastDraw = 0;
+  addEventListener("scroll", () => { scrolling = performance.now(); }, { passive: true });
   const callout = document.getElementById("callout");
 
   function layout() {
@@ -90,6 +94,8 @@
   let frozenSim = null;
   function frame(now) {
     raf = 0;
+    if (now - scrolling < 200 && now - lastDraw < 32 && !dragging) { schedule(); return; }
+    lastDraw = now;
     const t0 = performance.now();
     easeCam();
     const sim = paused ? (frozenSim ?? (frozenSim = simTime(now))) : (frozenSim = null, simTime(now));
@@ -100,9 +106,18 @@
 
     // Far-side Starlinks, before the Earth hides them.
     const near = [];
+    if (!satCache || Math.abs(now - satCacheAt) > 50 || Math.abs(sim - satCache.sim) > 600) {
+      const pos = new Float64Array(sats.length * 3);
+      for (let k = 0; k < sats.length; k += satStride) {
+        const ll = kepler(sats[k], sim);
+        pos[k * 3] = ll[0]; pos[k * 3 + 1] = ll[1]; pos[k * 3 + 2] = ll[2];
+      }
+      satCache = { pos, sim }; satCacheAt = now;
+    }
+    const P = satCache.pos;
     for (let k = 0; k < sats.length; k += satStride) {
-      const ll = kepler(sats[k], sim);
-      const p = project(ll[0], ll[1], ll[2]);
+      if (!P[k * 3 + 2]) continue;
+      const p = project(P[k * 3], P[k * 3 + 1], P[k * 3 + 2]);
       if (!p) continue;
       if (p[2] >= 0) near.push(p[0], p[1], p[2]);
       else { ctx.fillStyle = "rgba(230,238,248,0.10)"; ctx.fillRect(p[0] - 0.5, p[1] - 0.5, 1, 1); }

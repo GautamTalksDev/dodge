@@ -26,6 +26,30 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from manifest import sha256_file  # noqa: E402
 
 
+def load_manifest(path):
+    """Parse a manifest, or return None if it is not a well-formed DODGE manifest.
+
+    A manifest is attacker-controllable input to this tool (anyone can hand
+    you a folder), so its shape is checked before anything trusts it.
+    """
+    try:
+        with open(path, "rb") as f:
+            m = json.loads(f.read().decode("utf-8"))
+    except (OSError, ValueError, UnicodeDecodeError):
+        return None
+    if not isinstance(m, dict) or not isinstance(m.get("day"), str) or not isinstance(m.get("files"), dict):
+        return None
+    for name, meta in m["files"].items():
+        if (not isinstance(name, str) or os.path.basename(name) != name or name in ("", ".", "..")
+                or not isinstance(meta, dict) or not isinstance(meta.get("sha256"), str)
+                or not isinstance(meta.get("bytes"), int)):
+            return None
+    prev = m.get("previous")
+    if prev is not None and not (isinstance(prev, dict) and isinstance(prev.get("day"), str) and isinstance(prev.get("sha256"), str)):
+        return None
+    return m
+
+
 def main(folder):
     manifests = sorted(glob.glob(os.path.join(folder, "manifest-*.json")))
     if not manifests:
@@ -34,10 +58,15 @@ def main(folder):
     bad = 0
     by_day = {}
     for path in manifests:
-        m = json.load(open(path))
+        m = load_manifest(path)
+        if m is None:
+            print(f"MALFORMED {os.path.basename(path)}")
+            bad += 1
+            continue
         by_day[m["day"]] = path
         checked = 0
         for name, meta in m["files"].items():
+            # Names are plain file names (checked above), so this stays inside the folder.
             p = os.path.join(folder, name)
             if not os.path.exists(p):
                 continue
