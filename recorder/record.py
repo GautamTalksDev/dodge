@@ -116,6 +116,18 @@ def main(workdir):
         else:
             run["satcat"] = {"status": status}
 
+    # Which operators publish their own ephemerides through CelesTrak SupGP.
+    # One small page a day; the list is what "publishes publicly" means on the site.
+    sup_path = os.path.join(workdir, f"supgp-sources-{day}.json")
+    if not os.path.exists(sup_path):
+        status, body = fetch("https://celestrak.org/NORAD/elements/supplemental/")
+        if status == 200:
+            import re
+            files = sorted(set(re.findall(rb"sup-gp\.php\?FILE=([A-Za-z0-9_-]+)", body)))
+            with open(sup_path, "w") as f:
+                json.dump({"checked_at": run["ran_at"], "files": [x.decode() for x in files]}, f)
+            run["supgp_sources"] = len(files)
+
     print(json.dumps(run))
     return run
 
