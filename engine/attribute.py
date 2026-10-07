@@ -20,6 +20,12 @@ TYPES = {"PAY": "Satellite", "R/B": "Rocket body", "DEB": "Debris", "UNK": "Unkn
 TIERS = (5.0, 1.0, 0.5)
 
 
+def load_json(path):
+    """Read a JSON file and close it."""
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+
+
 def load_satcat(path):
     with gzip.open(path, "rt", encoding="utf-8") as f:
         return {int(r["NORAD_CAT_ID"]): r for r in csv.DictReader(f)}
@@ -30,9 +36,9 @@ def launch_of(intl):
 
 
 def main(screen_path, satcat_path, out_path, sup_path=None):
-    owners = json.load(open(os.path.join(HERE, "owners.json"), encoding="utf-8"))
+    owners = load_json(os.path.join(HERE, "owners.json"))
     sc = load_satcat(satcat_path)
-    data = json.load(open(screen_path))
+    data = load_json(screen_path)
     events, stats = data["events"], data["stats"]
     screened = data.get("screened_others", [])
 
@@ -94,7 +100,7 @@ def main(screen_path, satcat_path, out_path, sup_path=None):
     # Fleets: payloads only, with exposure and public-ephemeris status.
     sup_files = set()
     if sup_path and os.path.exists(sup_path):
-        sup_files = set(json.load(open(sup_path))["files"])
+        sup_files = set(load_json(sup_path)["files"])
     fleet_exp, fleet_ev = Counter(), defaultdict(Counter)
     fleet_meta = {}
     for n in screened:

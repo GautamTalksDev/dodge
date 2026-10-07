@@ -65,7 +65,6 @@ def main():
     ref = brute(star, others, t0, a.hours)
     events, _, _ = screen.screen(star, others, t0, a.hours)
     got = {(e["starlink"]["NORAD_CAT_ID"], e["other"]["NORAD_CAT_ID"], e["tca"].replace(microsecond=0).isoformat()[:15]) for e in events}
-    missed = ref - {g for g in got}
     # Same pair within the same 10 minutes counts as the same encounter.
     def loose(s):
         return {(x, y, t[:14]) for x, y, t in s}

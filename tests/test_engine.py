@@ -6,7 +6,6 @@
    sweep for real orbits from a crafted crossing.
 3. The full screen finds a crafted near miss between two real-looking orbits.
 """
-import math
 import os
 import sys
 import unittest

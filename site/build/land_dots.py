@@ -26,7 +26,8 @@ def inside(lon, lat, ring):
 
 
 def main():
-    g = json.load(open(os.path.join(HERE, "land110.json")))
+    with open(os.path.join(HERE, "land110.json"), encoding="utf-8") as f:
+        g = json.load(f)
     polys = []
     for f in g["features"]:
         geom = f["geometry"]

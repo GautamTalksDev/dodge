@@ -44,7 +44,8 @@ def build(day, folder, previous_path=None):
             files[name] = {"sha256": sha256_file(p), "bytes": os.path.getsize(p)}
     previous = None
     if previous_path and os.path.exists(previous_path):
-        prev = json.load(open(previous_path))
+        with open(previous_path, encoding="utf-8") as f:
+            prev = json.load(f)
         previous = {"day": prev["day"], "sha256": sha256_file(previous_path)}
     return {
         "day": day,

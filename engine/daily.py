@@ -94,7 +94,7 @@ def main(work, out):
         json.dump({"stats": stats, "events": slim, "screened_others": screened}, f)
     summary = attribute.main(raw, satcat, os.path.join(out, f"attr-{day}.json"), sup)
     sc = attribute.load_satcat(satcat)
-    owners = json.load(open(os.path.join(HERE, "owners.json"), encoding="utf-8"))
+    owners = attribute.load_json(os.path.join(HERE, "owners.json"))
     # Keep every pass under 1 km (for the live countdown) and at least TOP_EVENTS.
     keep = max(TOP_EVENTS, sum(1 for e in events if e["miss_km"] < 1.0))
     closest = [json.loads(json.dumps(s)) for s in slim[:keep]]  # copies: slim stays whole for the release file
@@ -127,7 +127,7 @@ def main(work, out):
     summary["generated_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
     summary["day"] = day
     if sup:
-        summary["public_ephemeris_files"] = json.load(open(sup))["files"]
+        summary["public_ephemeris_files"] = attribute.load_json(sup)["files"]
     for path in (os.path.join(out, "latest.json"), os.path.join(out, "days", f"{day}.json")):
         with open(path, "w") as f:
             json.dump(summary, f, separators=(",", ":"))

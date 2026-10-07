@@ -20,7 +20,6 @@ Method (screening grade, not collision probability):
 import gzip
 import json
 import math
-import sys
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
