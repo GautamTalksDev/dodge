@@ -2,8 +2,8 @@
 import os
 import sys
 import unittest
+import unittest.mock
 import urllib.error
-from unittest import mock
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "recorder"))
 import record  # noqa: E402
@@ -25,7 +25,7 @@ class _Resp:
 
 class FetchTests(unittest.TestCase):
     def setUp(self):
-        self.p = mock.patch.object(record, "RETRY_WAIT", (0, 0, 0))
+        self.p = unittest.mock.patch.object(record, "RETRY_WAIT", (0, 0, 0))
         self.p.start()
 
     def tearDown(self):
@@ -33,16 +33,16 @@ class FetchTests(unittest.TestCase):
 
     def test_timeout_then_success(self):
         calls = [TimeoutError("timed out"), urllib.error.URLError("timed out"), _Resp()]
-        with mock.patch("urllib.request.urlopen", side_effect=calls):
+        with unittest.mock.patch("urllib.request.urlopen", side_effect=calls):
             self.assertEqual(record.fetch("https://example.invalid/x"), (200, b"[]"))
 
     def test_every_attempt_fails_gives_status_0(self):
-        with mock.patch("urllib.request.urlopen", side_effect=TimeoutError("timed out")):
+        with unittest.mock.patch("urllib.request.urlopen", side_effect=TimeoutError("timed out")):
             self.assertEqual(record.fetch("https://example.invalid/x"), (0, b""))
 
     def test_404_is_returned_without_retry(self):
         err = urllib.error.HTTPError("u", 404, "nf", {}, None)
-        with mock.patch("urllib.request.urlopen", side_effect=err) as m:
+        with unittest.mock.patch("urllib.request.urlopen", side_effect=err) as m:
             self.assertEqual(record.fetch("https://example.invalid/x"), (404, b""))
             self.assertEqual(m.call_count, 1)
 
