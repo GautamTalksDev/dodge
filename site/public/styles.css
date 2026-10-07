@@ -350,3 +350,8 @@ h1 { text-wrap: wrap; }
 .brief-lines li::before { content: counter(b, decimal-leading-zero); font: 500 12px/1.9 var(--mono); color: var(--signal); }
 .brief-act { display: flex; gap: 10px; flex-wrap: wrap; }
 .brief-act a.btn { text-decoration: none; }
+
+/* Only the active chapter card is visible; the others fade, so cards never stack. */
+.js .step .card { opacity: 0; transform: translateY(14px) scale(.985); transition: opacity .5s var(--ease), transform .6s var(--ease); }
+.js .step.on .card { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .js .step .card { transform: none; } }

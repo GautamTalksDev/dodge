@@ -285,6 +285,7 @@
       if (!x.isIntersecting) return;
       const i = Number(x.target.id.slice(2)) - 1;
       items.forEach((li, k) => li.classList.toggle("on", k === i));
+      document.querySelectorAll(".step").forEach((s, k) => s.classList.toggle("on", k === i));
     }), { rootMargin: "-50% 0px -50% 0px" });
     document.querySelectorAll(".step").forEach((s) => io.observe(s));
   }
