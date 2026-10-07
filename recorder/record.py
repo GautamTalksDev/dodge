@@ -48,17 +48,31 @@ KEEP = (
 )
 
 
+RETRY_WAIT = (20, 60, 120)  # seconds between attempts when CelesTrak is slow or briefly down
+
+
 def fetch(url):
-    """Return (status, bytes). 403/404 come back as a status, not an exception."""
+    """Return (status, bytes). 403/404 come back as a status, not an exception.
+
+    Timeouts, connection errors and 5xx are retried (CelesTrak has short outages); if every attempt
+    fails the status is 0, so the run is logged as a miss instead of crashing the whole recording.
+    """
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Encoding": "gzip"})
-    try:
-        with urllib.request.urlopen(req, timeout=120) as r:
-            body = r.read()
-            if r.headers.get("Content-Encoding") == "gzip":
-                body = gzip.decompress(body)
-            return r.status, body
-    except urllib.error.HTTPError as e:
-        return e.code, b""
+    for attempt in range(len(RETRY_WAIT) + 1):
+        try:
+            with urllib.request.urlopen(req, timeout=120) as r:
+                body = r.read()
+                if r.headers.get("Content-Encoding") == "gzip":
+                    body = gzip.decompress(body)
+                return r.status, body
+        except urllib.error.HTTPError as e:
+            if e.code < 500 or attempt == len(RETRY_WAIT):
+                return e.code, b""
+        except (urllib.error.URLError, TimeoutError, ConnectionError, OSError):
+            if attempt == len(RETRY_WAIT):
+                return 0, b""
+        time.sleep(RETRY_WAIT[attempt])
+    return 0, b""
 
 
 def load_day(path):
