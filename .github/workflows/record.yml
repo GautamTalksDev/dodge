@@ -37,7 +37,9 @@ jobs:
           mkdir -p work
           gh release download "day-$D" -D work 2>/dev/null || echo "first run of $D"
       - name: Record
-        run: python3 recorder/record.py work | tee work/run.json
+        run: |
+          set -o pipefail
+          python3 recorder/record.py work | tee work/run.json
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: recording
@@ -71,7 +73,12 @@ jobs:
             gh release create "day-$D" --title "Orbit data $D" --latest=false \
               --notes "Orbit recordings first seen on $D (UTC) from CelesTrak, and that day's screen. Sealed the next morning with a SHA-256 manifest chained to the previous day and a Sigstore attestation. Verify: see docs/VERIFYING.md."
           shopt -s nullglob
-          gh release upload "day-$D" work/gp-*.ndjson.gz work/satcat-*.csv.gz work/supgp-sources-*.json --clobber
+          files=(work/gp-*.ndjson.gz work/satcat-*.csv.gz work/supgp-sources-*.json)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "::warning::Nothing new to upload this run (CelesTrak unreachable or unchanged)."
+          else
+            gh release upload "day-$D" "${files[@]}" --clobber
+          fi
       - name: Append the run log
         run: |
           cat work/run.json >> data/runs.ndjson
