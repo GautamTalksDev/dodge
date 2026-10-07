@@ -12,6 +12,7 @@ An open, daily screen of every close approach between Starlink and the rest of l
 [![screen](https://github.com/GautamTalksDev/dodge/actions/workflows/screen.yml/badge.svg)](https://github.com/GautamTalksDev/dodge/actions/workflows/screen.yml)
 [![codeql](https://github.com/GautamTalksDev/dodge/actions/workflows/codeql.yml/badge.svg)](https://github.com/GautamTalksDev/dodge/actions/workflows/codeql.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/GautamTalksDev/dodge/badge)](https://scorecard.dev/viewer/?uri=github.com/GautamTalksDev/dodge)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/15271/badge)](https://www.bestpractices.dev/projects/15271)
 [![Code: MIT](https://img.shields.io/badge/code-MIT-informational)](LICENSE)
 [![Data: CC BY 4.0](https://img.shields.io/badge/data-CC%20BY%204.0-informational)](LICENSE-DATA)
 

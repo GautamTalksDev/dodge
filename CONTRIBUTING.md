@@ -32,6 +32,18 @@ gh release download day-2026-10-06 -D work -p "gp-*" -p "satcat-*" -p "supgp-sou
 
 To preview the site, serve `site/public/` with any static server, and put a copy of `out/*.json` in `site/public/public-data/`. That folder is ignored by git and by deploys.
 
+## Test policy
+
+* Every new feature or behaviour change comes with automated tests in `tests/` (Python `unittest`), in the same pull request.
+* Every bug fix comes with a test that fails without the fix.
+* All tests run in CI (`ci.yml`) on every push and pull request, and before every daily screen (`screen.yml`), which does not publish if they fail.
+* Changes to screening also need the recall check in [docs/VALIDATION.md](docs/VALIDATION.md).
+
+## Versions
+
+* The engine and site are released as semantic versions (`vMAJOR.MINOR.PATCH` tags), with notes in [CHANGELOG.md](CHANGELOG.md), including any security fixes.
+* Daily data lives in `day-YYYY-MM-DD` releases and is not versioned software.
+
 ## Pull requests
 
 * One change per pull request, with a clear description of why.

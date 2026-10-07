@@ -2,7 +2,7 @@
 
 Every change that can move a published number is listed here, with the date it took effect. Dates are UTC.
 
-## 2026-10-07: first public release
+## v1.0.0, 2026-10-07: first public release
 
 ### Added
 
