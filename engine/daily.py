@@ -21,6 +21,9 @@ from datetime import datetime, timezone
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import attribute  # noqa: E402
+import brief  # noqa: E402
+import maneuvers  # noqa: E402
+from fleets import fleet_of  # noqa: E402
 import screen  # noqa: E402
 
 TOP_EVENTS = 300
@@ -66,7 +69,9 @@ def newest(pattern):
 
 def main(work, out):
     os.makedirs(os.path.join(out, "days"), exist_ok=True)
-    gp = sorted(glob.glob(os.path.join(work, "gp-*.ndjson.gz")))[-2:]  # today and yesterday
+    # Up to a week of recordings: the screen uses the best set per object,
+    # maneuver detection uses the history.
+    gp = sorted(glob.glob(os.path.join(work, "gp-*.ndjson.gz")))[-7:]
     satcat = newest(os.path.join(work, "satcat-*.csv.gz"))
     sup = newest(os.path.join(work, "supgp-sources-*.json"))
     rows = screen.load_rows(gp)
@@ -103,6 +108,8 @@ def main(work, out):
         s["other"].update(owner=own, owner_name=owners.get(own, own),
                           type=attribute.TYPES.get(r.get("OBJECT_TYPE"), "Unknown"), launched=r.get("LAUNCH_DATE"))
     summary["closest"] = closest
+    summary["maneuvers"] = maneuvers.summarise(rows, screened, sc, fleet_of, owners)
+    summary["brief"] = brief.build(summary)
     # Every approach, coarsely, for the globe's 24 h replay:
     # [unix s, lat, lon, miss m, type (0 satellite, 1 rocket body, 2 debris, 3 unknown), unregistered 0/1].
     tcode = {"PAY": 0, "R/B": 1, "DEB": 2}

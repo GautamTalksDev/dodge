@@ -41,10 +41,11 @@ jobs:
         run: python3 -m venv .venv && .venv/bin/pip install --quiet --require-hashes --no-deps -r requirements.txt
       - name: Tests (the screen does not publish if these fail)
         run: .venv/bin/python -m unittest discover -s tests -p "test_*.py"
-      - name: Fetch the last two days of recordings
+      - name: Fetch the last week of recordings
         run: |
           mkdir -p work
-          for d in $(date -u -d yesterday +%F) $(date -u +%F); do
+          for i in 6 5 4 3 2 1 0; do
+            d=$(date -u -d "$i days ago" +%F)
             gh release download "day-$d" -D work -p "gp-*" -p "satcat-*" -p "supgp-sources-*" 2>/dev/null || echo "no data for $d"
           done
       - name: Screen and attribute

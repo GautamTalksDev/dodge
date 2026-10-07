@@ -13,6 +13,13 @@ Every change that can move a published number is listed here, with the date it t
 * Website at dodge.gautamkhosla.com: live globe, 24 hour replay, focus view of single passes, leaderboards, a countdown to the next pass under 1 km.
 * Validation: spatial hash exactness test, crafted crossing test, recall check against brute force (80 of 80 on 6 October 2026).
 
+### Added on 2026-10-07
+
+* Maneuver detection from the recorded history (`engine/maneuvers.py`), active once two days exist.
+* The daily brief (`engine/brief.py`), template sentences from the day's numbers.
+* Fuzzing with ClusterFuzzLite and Atheris on OMM parsing and the verifier.
+* SLSA provenance (`provenance-*.intoto.jsonl`) on every release.
+
 ### Method decisions
 
 * Operator ephemerides (SupGP) are preferred over public sets for the same object.

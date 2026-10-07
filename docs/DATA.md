@@ -63,6 +63,8 @@ A JSON array, closest first. One entry per predicted pass under 5 km.
 | `dead_hardware` | Per owner: passes involving rocket bodies and debris |
 | `closest` | Every pass under 1 km, or the closest 300 if more. Each adds `at` (latitude, longitude, altitude in km at `tca`), `el` for both objects (see below), and the other object's `owner`, `owner_name`, `type`, `launched` |
 | `public_ephemeris_files` | The SupGP operator files that existed that day |
+| `brief` | `headline` and `lines`: plain sentences built by fixed templates from the numbers above (`engine/brief.py`), no language model |
+| `maneuvers` | Once at least two days of history exist: `window_days`, `threshold_km`, and per fleet and owner the payloads screened and the share seen maneuvering (`engine/maneuvers.py`). `null` before that |
 
 ## Replay: `replay.json`
 

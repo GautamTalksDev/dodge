@@ -54,7 +54,15 @@ Each pass is joined with the SATCAT entry of the other object:
 
 Raw totals mostly follow how much hardware sits at Starlink's altitudes. Every owner and fleet row therefore also shows how many of its objects were screened, and the passes per object.
 
-## 8. What the numbers mean, and what they do not
+## 8. Maneuver detection
+
+Between two consecutive element sets of the same object, less than 3 days apart, the semi-major axis should change only as drag predicts from the mean motion derivative. A difference of more than 250 m from that prediction counts as a maneuver, well above the tens of metres of element set noise. Over the last 7 days of recordings, each fleet gets the share of its payloads in Starlink's band that were seen maneuvering. Payloads that never maneuver either cannot (no propulsion) or did not. Either way, Starlink has to be the one that moves. This needs at least two days of history.
+
+## 9. The daily brief
+
+`engine/brief.py` writes a headline and a few sentences from fixed templates filled with the day's computed numbers. No language model is involved, so the brief cannot state anything the data does not contain.
+
+## 10. What the numbers mean, and what they do not
 
 * **Screening grade.** Public element sets for non-Starlink objects are typically accurate to around a kilometre near their epoch, and worse after. A predicted 300 m pass might really be 50 m or 2 km. Single passes are indicative. Totals and per-object rates are robust.
 * **Not collision probabilities.** DODGE does not use covariance, so it cannot compute a probability of collision. Operators screen with their own ephemerides and covariance and maneuver on probability, not on a fixed distance. SpaceX uses 3 in 10 million.

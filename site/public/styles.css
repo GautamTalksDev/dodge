@@ -342,3 +342,11 @@ h1 { text-wrap: wrap; }
 .bn { display: inline-block; min-width: 6ch; text-align: right; }
 .foot .micro a { text-decoration: none; color: var(--t2); }
 .foot .micro a:hover { color: var(--t1); }
+.inner.brief { max-width: var(--max); }
+.brief > * { max-width: 980px; }
+.brief-head { font: 500 clamp(24px, 2.6vw, 34px)/1.25 var(--sans); letter-spacing: -.02em; margin: 0 0 28px; text-wrap: balance; }
+.brief-lines { list-style: none; margin: 0 0 28px; padding: 0; counter-reset: b; }
+.brief-lines li { counter-increment: b; display: grid; grid-template-columns: 48px 1fr; gap: 12px; padding: 16px 0; border-top: 1px solid var(--line); color: var(--t2); }
+.brief-lines li::before { content: counter(b, decimal-leading-zero); font: 500 12px/1.9 var(--mono); color: var(--signal); }
+.brief-act { display: flex; gap: 10px; flex-wrap: wrap; }
+.brief-act a.btn { text-decoration: none; }

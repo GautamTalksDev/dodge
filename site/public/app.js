@@ -200,6 +200,7 @@
     if (kind === "o") return `${esc(v)}<span class="sub">#${esc(r.key)} · ${esc(r.intl || "")}</span>`;
     if (kind === "t") return typeTag(v);
     if (kind === "p") return `${(v * 100).toFixed(1)}%`;
+    if (kind === "pc") return v == null ? "-" : `${Math.round(v * 100)}%`;
     if (kind === "f") return v == null ? "-" : Number(v).toFixed(2);
     if (kind === "b") return v == null ? '<span class="pill">Unknown</span>' : v ? '<span class="pill yes">Publicly</span>' : '<span class="pill no">Not publicly</span>';
     const s = fmt(v);
@@ -218,7 +219,7 @@
     });
     const max = Math.max(1, ...rows.map((r) => Number(r[barCol[1]]) || 0));
     const table = $("who-table");
-    const isNum = (k) => ["n", "p", "f"].includes(k);
+    const isNum = (k) => ["n", "p", "f", "pc"].includes(k);
     setHTML(table.querySelector("thead"), "<tr><th class=\"rank-h\"><span class=\"sr\">Rank</span></th>" + tab.cols.map((c) => {
       const s = c[1] === sk ? (sortDir < 0 ? "descending" : "ascending") : "none";
       return `<th class="${isNum(c[2]) ? "r" : ""}" aria-sort="${s}"><button class="sortbtn" data-k="${c[1]}" type="button">${c[0]}${s === "none" ? "" : s === "descending" ? " ↓" : " ↑"}</button></th>`;
@@ -244,6 +245,20 @@
     const yes = fleets.filter((f) => f.public_ephemerides), no = fleets.filter((f) => !f.public_ephemerides);
     setHTML($("share-grid"), `<div class="share-group micro">Publish their orbits publicly · ${yes.length}</div>` + yes.map(cardOf).join("") +
       `<div class="share-group micro">Do not publish publicly · ${no.length}</div>` + no.map(cardOf).join(""));
+  }
+
+  function briefing(d) {
+    const b = d.brief;
+    if (!b) { $("brief").hidden = true; return; }
+    $("brief-head").textContent = b.headline;
+    setHTML($("brief-lines"), b.lines.map((l) => `<li>${esc(l)}</li>`).join(""));
+    $("brief-post").href = `https://x.com/intent/post?text=${encodeURIComponent(b.headline + " Who is on the other side:")}&url=${encodeURIComponent("https://dodge.gautamkhosla.com/")}`;
+    $("brief-copy").addEventListener("click", async () => {
+      const btn = $("brief-copy");
+      try { await navigator.clipboard.writeText([b.headline, ...b.lines, "https://dodge.gautamkhosla.com"].join("\n")); btn.textContent = "Copied"; }
+      catch (e) { btn.textContent = "Select and copy"; }
+      setTimeout(() => { btn.textContent = "Copy the brief"; }, 2000);
+    });
   }
 
   function reveals() {
@@ -308,7 +323,12 @@
     }
     const m = /#pass=(\d+)-(\d+)-(\d+)/.exec(location.hash);
     if (m) focusEvent = (D.closest || []).find((e) => passId(e) === `${m[1]}-${m[2]}-${m[3]}`) || null;
-    header(D); story(D); figs(D); nextPass(D); closest(D); sharing(D); renderTab();
+    if (D.maneuvers) {
+      const mv = Object.fromEntries(D.maneuvers.by_fleet.map((f) => [f.fleet, f]));
+      (D.by_fleet || []).forEach((f) => { const m = mv[f.fleet]; f.maneuvering = m && m.payloads ? m.share : null; });
+      TABS.fleet.cols.push([`Seen maneuvering (${D.maneuvers.window_days} d)`, "maneuvering", "pc"]);
+    }
+    header(D); story(D); figs(D); nextPass(D); closest(D); sharing(D); briefing(D); renderTab();
     document.body.removeAttribute("data-loading");
     pointerLight();
     document.querySelectorAll(".tabs button").forEach((b) => b.addEventListener("click", () => { tabKey = b.dataset.tab; sortKey = null; sortDir = -1; renderTab(); }));
