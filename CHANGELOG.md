@@ -2,6 +2,13 @@
 
 Every change that can move a published number is listed here, with the date it took effect. Dates are UTC.
 
+## Unreleased, 2026-10-17: Maneuver Ledger page
+
+No published number changes. The site gains one page.
+
+* `/ledger/`: the results page of [Maneuver Ledger](https://github.com/GautamTalksDev/maneuver-ledger), a separate project that reads DODGE's sealed recordings and asks how many of Starlink's avoidance burns public orbit data can see. Built by `site/build/ledger_page.py` from that project's generated page, unchanged inside DODGE's header, footer and stylesheet (`/ledger/ledger.css`). No scripts, no inline styles, so the site's Content Security Policy is unchanged.
+* Links to it from the home page (navigation and footer), the method page and the privacy page; added to `sitemap.xml`.
+
 ## v1.0.0, 2026-10-07: first public release
 
 ### Added
