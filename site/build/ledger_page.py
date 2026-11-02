@@ -22,6 +22,7 @@ import sys
 
 OUT = os.path.join(os.path.dirname(__file__), "..", "public", "ledger", "index.html")
 REPO = "https://github.com/GautamTalksDev/maneuver-ledger"
+FILM = "https://www.youtube.com/watch?v=v6X-MkL-AzA"
 
 HEAD = """<!doctype html>
 <html lang="en">
@@ -51,6 +52,7 @@ HEAD = """<!doctype html>
   <nav class="nav" aria-label="Site"><a class="keep" href="/">Today</a><a class="keep" href="/method/">Method</a><a class="keep" href="/ledger/" aria-current="page">Ledger</a><a href="{repo}" rel="noopener">Code and data</a></nav>
 </header>
 <main class="prose ledger" id="main">
+<p class="film"><a class="btn" href="{film}" rel="noopener"><span class="play" aria-hidden="true"></span>Watch the investigation <span class="dim">12 min</span><span class="arr" aria-hidden="true">↗</span></a></p>
 """
 
 ABOUT = """<h2>About this page</h2>
@@ -64,7 +66,7 @@ FOOT = """</main>
     <p>Orbit data from <a href="https://celestrak.org">CelesTrak</a> (Dr T.S. Kelso), recorded by DODGE. The reference count is SpaceX's own filing with the FCC. No Space-Track data.</p>
     <p>Independent project by <a href="https://gautamkhosla.com">Gautam Khosla</a>. Not affiliated with SpaceX or Starlink. Screening grade, not for operations.</p>
   </div>
-  <div class="micro"><p><a href="/">Today</a> · <a href="/method/">Method</a> · <a href="/privacy/">Privacy</a> · <a href="{repo}/security/policy">Security</a> · <a href="{repo}/issues">Report an error</a></p></div>
+  <div class="micro"><p><a href="/">Today</a> · <a href="/method/">Method</a> · <a href="{film}">Film</a> · <a href="/privacy/">Privacy</a> · <a href="{repo}/security/policy">Security</a> · <a href="{repo}/issues">Report an error</a></p></div>
 </footer>
 </body>
 </html>
@@ -97,9 +99,9 @@ def build(ledger_dir, out=OUT):
                                 capture_output=True, text=True, check=True).stdout.strip()
     except (OSError, subprocess.CalledProcessError):
         commit = "unknown"
-    doc = (HEAD.format(repo=REPO) + body + ABOUT.format(repo=REPO, commit=html.escape(commit),
-                                                       digest=hashlib.sha256(raw).hexdigest()[:16])
-           + FOOT.format(repo=REPO))
+    doc = (HEAD.format(repo=REPO, film=FILM) + body + ABOUT.format(repo=REPO, commit=html.escape(commit),
+                                                                  digest=hashlib.sha256(raw).hexdigest()[:16])
+           + FOOT.format(repo=REPO, film=FILM))
     check(doc.split("<body>", 1)[1])
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, "w", encoding="utf-8", newline="\n") as f:

@@ -1,6 +1,7 @@
 /* Maneuver Ledger results page, in DODGE's design system (tokens from /styles.css).
    No inline styles anywhere on the page: the CSP allows style-src 'self' only. */
 .prose.ledger { max-width: 980px; }
+.ledger .film { margin: 0 0 22px; }
 .ledger h1 { font: 500 clamp(34px, 4.6vw, 58px)/1.04 var(--sans); letter-spacing: -.035em; margin: 0 0 22px; text-wrap: balance; }
 .ledger h3 { font: 500 18px/1.35 var(--sans); letter-spacing: -.01em; margin: 26px 0 8px; color: var(--t1); }
 .ledger .kicker { font: 500 11px/1.5 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--t3);

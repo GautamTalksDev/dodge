@@ -105,6 +105,10 @@ h1 em { font: italic 400 1.04em/1 var(--serif); letter-spacing: -.01em; color: v
 .btn:hover { border-color: var(--t2); background: rgba(255,255,255,.04); }
 .btn .arr { transition: transform .2s var(--ease); }
 .btn:hover .arr { transform: translateX(3px); }
+a.btn { text-decoration: none; }
+.btn .play { width: 0; height: 0; border-left: 8px solid var(--signal); border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
+.btn .dim { color: var(--t3); }
+.film { margin: -8px 0 28px; }
 
 /* Glass: the one floating material. Solid first, glass where the browser can.
    Layers: tint and structural gradient, backdrop blur, specular top edge,
@@ -251,7 +255,7 @@ table.data { width: 100%; border-collapse: separate; border-spacing: 0; font-siz
 .quote b { color: var(--signal); font-weight: 400; }
 .quote-by { color: var(--t3); }
 
-.data-cta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.data-cta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
 .data-cta a { background: var(--bg); padding: 28px; text-decoration: none; display: flex; flex-direction: column; gap: 10px; min-height: 170px; }
 .data-cta strong { font: 500 20px var(--sans); letter-spacing: -.01em; display: flex; justify-content: space-between; align-items: baseline; }
 .data-cta strong .arr { color: var(--t3); transition: transform .25s var(--ease), color .2s var(--ease-ui); }
